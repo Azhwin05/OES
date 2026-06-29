@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter, Noto_Sans_Tamil } from "next/font/google"
 import { cookies } from "next/headers"
 import "./globals.css"
@@ -21,6 +21,12 @@ export const metadata: Metadata = {
   title: "OES — Online Enumeration System",
   description:
     "A secure online platform to collect, manage, and review educational beneficiary information.",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 }
 
 export default async function RootLayout({

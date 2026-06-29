@@ -265,14 +265,14 @@ export function ApplicationsTable({ data }: { data: ApplicationListRow[] }) {
             options={[{ value: "yes", label: t("common.yes") }, { value: "no", label: t("common.no") }]} />
           <FilterSelect label={t("filter.impairment")} value={impairment} onChange={setImpairment}
             options={[{ value: "yes", label: t("common.yes") }, { value: "no", label: t("common.no") }]} />
-          <div className="flex items-end gap-1">
-            <div className="grid gap-1">
+          <div className="col-span-2 flex items-end gap-1 sm:col-span-1">
+            <div className="grid min-w-0 flex-1 gap-1">
               <span className="text-muted-foreground text-[11px]">{t("filter.dateFrom")}</span>
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-8" />
+              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-8 w-full min-w-0" />
             </div>
-            <div className="grid gap-1">
+            <div className="grid min-w-0 flex-1 gap-1">
               <span className="text-muted-foreground text-[11px]">{t("filter.dateTo")}</span>
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-8" />
+              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-8 w-full min-w-0" />
             </div>
           </div>
         </div>

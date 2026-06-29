@@ -129,13 +129,13 @@ export function ApplicationDetail({
   return (
     <div className="space-y-5">
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <Button variant="ghost" size="icon-sm" render={<Link href="/admin/applications" />}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="font-mono text-lg font-bold">{app.reference_number}</h1>
-            <p className="text-muted-foreground text-sm">{app.applicant_name}</p>
+          <div className="min-w-0">
+            <h1 className="truncate font-mono text-lg font-bold">{app.reference_number}</h1>
+            <p className="text-muted-foreground truncate text-sm">{app.applicant_name}</p>
           </div>
           <StatusBadge status={app.status} />
         </div>

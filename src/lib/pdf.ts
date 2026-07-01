@@ -55,7 +55,6 @@ export function generateApplicationPdf(
 
   section("Personal Information", [
     ["Full Name", s(v.personal?.full_name)],
-    ["Name (Tamil)", s(v.personal?.name_tamil)],
     ["Contact Number", s(v.personal?.contact_number)],
     ["Alternate Number", s(v.personal?.alt_contact_number)],
     ["Email", s(v.personal?.email)],

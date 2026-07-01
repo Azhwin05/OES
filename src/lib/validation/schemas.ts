@@ -28,19 +28,17 @@ const optionalPhone = z
   .or(z.literal(""))
   .refine((v) => !v || phoneRegex.test(v), "err.invalidPhone")
 const pin = z.string({ error: "err.invalidPin" }).regex(pinRegex, "err.invalidPin")
-const optionalEmail = z
-  .string()
-  .optional()
-  .or(z.literal(""))
-  .refine((v) => !v || z.string().email().safeParse(v).success, "err.invalidEmail")
+const requiredEmail = z
+  .string({ error: "err.required" })
+  .min(1, "err.required")
+  .refine((v) => z.string().email().safeParse(v).success, "err.invalidEmail")
 
 // ---- Step 1: Personal ----
 export const personalSchema = z.object({
   full_name: requiredText,
-  name_tamil: z.string().optional().or(z.literal("")),
   contact_number: phone,
   alt_contact_number: optionalPhone,
-  email: optionalEmail,
+  email: requiredEmail,
   dob: z.string().optional().or(z.literal("")),
   gender: z.enum(GENDERS).optional(),
   town: z.string().optional().or(z.literal("")),

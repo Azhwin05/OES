@@ -13,7 +13,6 @@ export function ExportView({ data }: { data: ApplicationListRow[] }) {
   const flat = data.map((r) => ({
     Reference: r.reference_number,
     Name: r.applicant_name,
-    TamilName: r.name_tamil ?? "",
     Phone: r.primary_phone,
     Email: r.email ?? "",
     Gender: r.gender ?? "",

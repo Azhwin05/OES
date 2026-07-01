@@ -55,6 +55,7 @@ test.describe("OES public site", () => {
     await page.goto("/apply")
     await page.getByLabel(/Full Name/i).fill("Test Applicant")
     await page.getByLabel(/^Contact Number/i).fill("9876543210")
+    await page.getByLabel(/Email ID/i).fill("test@example.com")
     await page.getByLabel(/PIN Code/i).fill("600001")
     // District is the only unset required select (State defaults to Tamil Nadu)
     await page.getByRole("combobox", { name: /District/i }).click()

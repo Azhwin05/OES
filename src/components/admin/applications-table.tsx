@@ -77,7 +77,7 @@ export function ApplicationsTable({ data }: { data: ApplicationListRow[] }) {
     return data.filter((r) => {
       if (q) {
         const hay = [
-          r.applicant_name, r.name_tamil, r.primary_phone, r.email,
+          r.applicant_name, r.primary_phone, r.email,
           r.reference_number, r.district, r.institution_name, r.course_name,
         ]
           .filter(Boolean)
@@ -138,11 +138,6 @@ export function ApplicationsTable({ data }: { data: ApplicationListRow[] }) {
         cell: ({ row }) => (
           <div className="min-w-0">
             <p className="truncate font-medium">{row.original.applicant_name}</p>
-            {row.original.name_tamil && (
-              <p className="text-muted-foreground truncate font-tamil text-xs">
-                {row.original.name_tamil}
-              </p>
-            )}
           </div>
         ),
       },
@@ -196,7 +191,6 @@ export function ApplicationsTable({ data }: { data: ApplicationListRow[] }) {
     const flat = rows.map((r) => ({
       Reference: r.reference_number,
       Name: r.applicant_name,
-      TamilName: r.name_tamil ?? "",
       Phone: r.primary_phone,
       Email: r.email ?? "",
       Gender: r.gender ?? "",

@@ -27,7 +27,6 @@ import {
   SiblingsStep,
   ImpairmentStep,
   ResidenceStep,
-  DocumentsStep,
   ReviewStep,
 } from "@/components/apply/steps"
 import {
@@ -53,7 +52,6 @@ const STEP_FIELDS: FieldPath<ApplicationFormValues>[] = [
   "siblings",
   "impairment",
   "residence",
-  "documents",
 ]
 
 export function ApplyForm() {
@@ -163,8 +161,7 @@ export function ApplyForm() {
               {step === 3 && <SiblingsStep form={form} />}
               {step === 4 && <ImpairmentStep form={form} />}
               {step === 5 && <ResidenceStep form={form} />}
-              {step === 6 && <DocumentsStep form={form} />}
-              {step === 7 && <ReviewStep form={form} onEditStep={goto} />}
+              {step === 6 && <ReviewStep form={form} onEditStep={goto} />}
             </div>
 
             <div className="mt-8 flex items-center justify-between gap-3 border-t pt-5">

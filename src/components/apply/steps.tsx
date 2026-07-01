@@ -29,7 +29,6 @@ import {
   RESIDENCE_TYPES,
   ROOF_TYPES,
   OWNERSHIP_SOURCES,
-  type DocumentType,
 } from "@/lib/constants"
 import type { ApplicationFormValues, UploadedDoc } from "@/lib/validation/schemas"
 
@@ -49,10 +48,9 @@ export function PersonalStep({ form }: StepProps) {
   return (
     <div className="grid gap-5 sm:grid-cols-2">
       <TextField control={c} name="personal.full_name" label={t("f.fullName")} required />
-      <TextField control={c} name="personal.name_tamil" label={t("f.nameTamil")} />
       <TextField control={c} name="personal.contact_number" label={t("f.contactNumber")} required inputMode="tel" placeholder="9876543210" />
       <TextField control={c} name="personal.alt_contact_number" label={t("f.altContactNumber")} inputMode="tel" />
-      <TextField control={c} name="personal.email" label={t("f.email")} type="email" inputMode="email" />
+      <TextField control={c} name="personal.email" label={t("f.email")} type="email" inputMode="email" required />
       <TextField control={c} name="personal.dob" label={t("f.dob")} type="date" />
       <div className="sm:col-span-2">
         <RadioField control={c} name="personal.gender" label={t("f.gender")} options={opts(GENDERS, t, "f.gender.")} />
@@ -224,44 +222,7 @@ export function ResidenceStep({ form }: StepProps) {
   )
 }
 
-/* ------------------------------ Step 7: Documents ------------------------------ */
-const DOC_FIELDS: { type: DocumentType; labelKey: string }[] = [
-  { type: "student_photo", labelKey: "f.doc.studentPhoto" },
-  { type: "aadhaar", labelKey: "f.doc.aadhaar" },
-  { type: "income", labelKey: "f.doc.income" },
-  { type: "community", labelKey: "f.doc.community" },
-  { type: "scholarship", labelKey: "f.doc.scholarship" },
-  { type: "other", labelKey: "f.doc.other" },
-]
-
-export function DocumentsStep({ form }: StepProps) {
-  const t = useT()
-  const docs = (form.watch("documents") ?? []) as UploadedDoc[]
-
-  function setDoc(type: DocumentType, doc: UploadedDoc | undefined) {
-    const others = docs.filter((d) => d.document_type !== type)
-    form.setValue("documents", doc ? [...others, doc] : others)
-  }
-
-  return (
-    <div className="grid gap-5">
-      <p className="text-muted-foreground text-sm">{t("doc.rules")}</p>
-      <div className="grid gap-5 sm:grid-cols-2">
-        {DOC_FIELDS.map(({ type, labelKey }) => (
-          <DocumentUpload
-            key={type}
-            documentType={type}
-            label={t(labelKey)}
-            value={docs.find((d) => d.document_type === type)}
-            onChange={(doc) => setDoc(type, doc)}
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/* ------------------------------ Step 8: Review ------------------------------ */
+/* ------------------------------ Step 7: Review ------------------------------ */
 export { ReviewStep } from "@/components/apply/review-step"
 
 export { Separator }

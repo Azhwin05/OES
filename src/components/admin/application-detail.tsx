@@ -119,7 +119,7 @@ export function ApplicationDetail({
     }
     const sv = (v: any) => (v === null || v === undefined || v === "" ? "-" : String(v))
     let y = 64
-    y = section("Personal", [["Name", sv(p.full_name)], ["Tamil", sv(p.name_tamil)], ["Phone", sv(p.contact_number)], ["Email", sv(p.email)], ["District", sv(p.district)], ["PIN", sv(p.pincode)]], y)
+    y = section("Personal", [["Name", sv(p.full_name)], ["Phone", sv(p.contact_number)], ["Email", sv(p.email)], ["District", sv(p.district)], ["PIN", sv(p.pincode)]], y)
     y = section("Education", [["School", sv(e.school_name)], ["Institution", sv(e.institution_name)], ["Course", sv(e.course_name)], ["Year", sv(e.current_year)]], y)
     y = section("Family", [["Father", sv(f.father_name)], ["Mother", sv(f.mother_name)], ["Guardian", sv(f.guardian_name)], ["Income", sv(f.annual_income)]], y)
     y = section("Residence", [["Type", sv(re.residence_type)], ["Address", sv(re.door_street)], ["District", sv(re.district)]], y)
@@ -180,7 +180,6 @@ export function ApplicationDetail({
         <div className="space-y-5 lg:col-span-2">
           <Section title={t("detail.personal")}>
             <Field label={t("f.fullName")} value={p.full_name} />
-            <Field label={t("f.nameTamil")} value={p.name_tamil} tamil />
             <Field label={t("f.contactNumber")} value={p.contact_number} />
             <Field label={t("f.altContactNumber")} value={p.alt_contact_number} />
             <Field label={t("f.email")} value={p.email} />

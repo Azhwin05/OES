@@ -13,6 +13,7 @@ describe("personalSchema", () => {
   const base = {
     full_name: "Test User",
     contact_number: "9876543210",
+    email: "test@example.com",
     district: "Chennai",
     state: "Tamil Nadu",
     pincode: "600001",
@@ -47,9 +48,9 @@ describe("personalSchema", () => {
     expect(r.success).toBe(false)
   })
 
-  it("allows an empty optional email", () => {
+  it("requires an email", () => {
     const r = personalSchema.safeParse({ ...base, email: "" })
-    expect(r.success).toBe(true)
+    expect(r.success).toBe(false)
   })
 })
 
@@ -142,6 +143,7 @@ describe("fullApplicationSchema", () => {
     personal: {
       full_name: "Test User",
       contact_number: "9876543210",
+      email: "test@example.com",
       district: "Chennai",
       state: "Tamil Nadu",
       pincode: "600001",

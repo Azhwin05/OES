@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { CheckboxField } from "@/components/apply/fields"
 import { useT, useLanguage } from "@/lib/i18n/context"
-import type { ApplicationFormValues, UploadedDoc } from "@/lib/validation/schemas"
+import type { ApplicationFormValues } from "@/lib/validation/schemas"
 
 type Props = {
   form: UseFormReturn<ApplicationFormValues>
@@ -29,8 +29,6 @@ export function ReviewStep({ form, onEditStep }: Props) {
   const tr = (key?: string | null, prefix = "") =>
     key ? t(`${prefix}${key}`) : undefined
 
-  const docs = (v.documents ?? []) as UploadedDoc[]
-
   return (
     <div className="grid gap-5">
       <p className={`text-muted-foreground text-sm ${lang === "ta" ? "font-tamil" : ""}`}>
@@ -39,7 +37,6 @@ export function ReviewStep({ form, onEditStep }: Props) {
 
       <Section title={t("detail.personal")} onEdit={() => onEditStep(0)}>
         {row(t("f.fullName"), v.personal?.full_name)}
-        {row(t("f.nameTamil"), v.personal?.name_tamil)}
         {row(t("f.contactNumber"), v.personal?.contact_number)}
         {row(t("f.email"), v.personal?.email)}
         {row(t("f.dob"), v.personal?.dob)}
@@ -86,12 +83,6 @@ export function ReviewStep({ form, onEditStep }: Props) {
         {row(t("f.pincode"), v.residence?.pincode)}
       </Section>
 
-      <Section title={t("detail.documents")} onEdit={() => onEditStep(6)}>
-        {docs.length === 0
-          ? row(t("detail.documents"), t("common.none"))
-          : docs.map((d) => row(t(`f.doc.${docLabelKey(d.document_type)}`), d.file_name))}
-      </Section>
-
       <Separator />
 
       <div className="rounded-lg border bg-accent/30 p-4">
@@ -103,19 +94,6 @@ export function ReviewStep({ form, onEditStep }: Props) {
       </div>
     </div>
   )
-}
-
-function docLabelKey(type: string) {
-  const map: Record<string, string> = {
-    student_photo: "studentPhoto",
-    aadhaar: "aadhaar",
-    income: "income",
-    community: "community",
-    scholarship: "scholarship",
-    impairment: "impairment",
-    other: "other",
-  }
-  return map[type] ?? "other"
 }
 
 function Section({

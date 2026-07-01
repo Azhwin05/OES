@@ -125,15 +125,15 @@ const en: Dict = {
   "f.pincode": "PIN Code",
 
   // Education
-  "f.schoolName": "School Name",
+  "f.schoolName": "School Studied",
   "f.schoolType": "School Type",
   "f.institutionName": "Current Institution Name",
   "f.institutionType": "Current Institution Type",
   "f.courseName": "Course Name",
   "f.courseDuration": "Course Duration (years)",
-  "f.currentYear": "Current Year",
+  "f.currentYear": "Current Year of Study",
   "f.currentSemester": "Current Semester",
-  "f.scholarshipDetails": "Scholarship Details",
+  "f.scholarshipDetails": "Scholarship Details (if any)",
   "f.government": "Government",
   "f.private": "Private",
 
@@ -524,15 +524,15 @@ const ta: Dict = {
   "f.state": "மாநிலம்",
   "f.pincode": "அஞ்சல் குறியீடு",
 
-  "f.schoolName": "பள்ளியின் பெயர்",
+  "f.schoolName": "படித்த பள்ளி",
   "f.schoolType": "பள்ளி வகை",
   "f.institutionName": "தற்போதைய நிறுவனத்தின் பெயர்",
   "f.institutionType": "தற்போதைய நிறுவன வகை",
   "f.courseName": "பாடநெறி பெயர்",
   "f.courseDuration": "பாடநெறி காலம் (ஆண்டுகள்)",
-  "f.currentYear": "தற்போதைய ஆண்டு",
+  "f.currentYear": "தற்போது படிக்கும் ஆண்டு",
   "f.currentSemester": "தற்போதைய பருவம்",
-  "f.scholarshipDetails": "உதவித்தொகை விவரங்கள்",
+  "f.scholarshipDetails": "உதவித்தொகை விவரங்கள் (ஏதேனும் இருந்தால்)",
   "f.government": "அரசு",
   "f.private": "தனியார்",
 

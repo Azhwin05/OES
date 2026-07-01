@@ -11,7 +11,6 @@ export const STEP_KEYS = [
   "step.siblings",
   "step.impairment",
   "step.residence",
-  "step.documents",
   "step.review",
 ] as const
 

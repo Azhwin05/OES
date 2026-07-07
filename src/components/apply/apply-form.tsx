@@ -40,7 +40,7 @@ import type {
   ApplicationFormValues,
   FullApplication,
 } from "@/lib/validation/schemas"
-import { submitApplication } from "@/app/(public)/apply/actions"
+import { submitApplication } from "@/app/oes/(public)/apply/actions"
 import { generateApplicationPdf } from "@/lib/pdf"
 import { useT, useLanguage } from "@/lib/i18n/context"
 import type { FieldPath } from "react-hook-form"
@@ -237,7 +237,7 @@ function SuccessScreen({
             <Printer className="mr-1 h-4 w-4" />
             {t("common.print")}
           </Button>
-          <Button variant="outline" render={<Link href="/track" />}>
+          <Button variant="outline" render={<Link href="/oes/track" />}>
             <FileSearch className="mr-1 h-4 w-4" />
             {t("success.trackNow")}
           </Button>

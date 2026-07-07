@@ -17,7 +17,7 @@ function LoginInner() {
   const t = useT()
   const router = useRouter()
   const params = useSearchParams()
-  const redirect = params.get("redirect") || "/admin"
+  const redirect = params.get("redirect") || "/oes/admin"
   const urlError = params.get("error")
 
   const [email, setEmail] = useState("")

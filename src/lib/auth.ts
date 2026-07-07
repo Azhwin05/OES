@@ -32,8 +32,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 /** Require a staff user (any role with an OES profile). Redirects otherwise. */
 export async function requireStaff(): Promise<SessionUser> {
   const user = await getSessionUser()
-  if (!user) redirect("/admin/login")
-  if (!user.profile) redirect("/admin/login?error=unauthorized")
+  if (!user) redirect("/oes/admin/login")
+  if (!user.profile) redirect("/oes/admin/login?error=unauthorized")
   return user
 }
 
@@ -41,7 +41,7 @@ export async function requireStaff(): Promise<SessionUser> {
 export async function requireAdmin(): Promise<SessionUser> {
   const user = await requireStaff()
   if (user.profile!.role === "viewer") {
-    redirect("/admin?error=forbidden")
+    redirect("/oes/admin?error=forbidden")
   }
   return user
 }

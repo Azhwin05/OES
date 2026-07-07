@@ -10,10 +10,10 @@ import { useT } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
 
 const links = [
-  { href: "/", key: "nav.home" },
-  { href: "/apply", key: "nav.apply" },
-  { href: "/track", key: "nav.track" },
-  { href: "/contact", key: "nav.contact" },
+  { href: "/oes", key: "nav.home" },
+  { href: "/oes/apply", key: "nav.apply" },
+  { href: "/oes/track", key: "nav.track" },
+  { href: "/oes/contact", key: "nav.contact" },
 ]
 
 export function SiteHeader() {
@@ -23,7 +23,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" aria-label="OES home">
+        <Link href="/oes" aria-label="OES home">
           <BrandLogo />
         </Link>
 
@@ -44,11 +44,11 @@ export function SiteHeader() {
           <Button
             variant="outline"
             size="sm"
-            render={<Link href="/admin/login" />}
+            render={<Link href="/oes/admin/login" />}
           >
             {t("nav.adminLogin")}
           </Button>
-          <Button size="sm" render={<Link href="/apply" />}>
+          <Button size="sm" render={<Link href="/oes/apply" />}>
             {t("home.hero.cta.start")}
           </Button>
         </div>
@@ -84,7 +84,7 @@ export function SiteHeader() {
             </Link>
           ))}
           <Link
-            href="/admin/login"
+            href="/oes/admin/login"
             onClick={() => setOpen(false)}
             className="rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
           >

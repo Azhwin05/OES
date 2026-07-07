@@ -47,7 +47,7 @@ import { StatusBadge } from "@/components/status-badge"
 import { useT } from "@/lib/i18n/context"
 import { APP_STATUSES, DISTRICTS, GENDERS, SCHOOL_TYPES, RESIDENCE_TYPES } from "@/lib/constants"
 import type { ApplicationListRow } from "@/lib/queries"
-import { softDeleteApplications } from "@/app/admin/actions"
+import { softDeleteApplications } from "@/app/oes/admin/actions"
 import { exportToExcel, exportToCsv } from "@/lib/export"
 
 const ALL = "all"

@@ -25,13 +25,13 @@ import { cn } from "@/lib/utils"
 import type { UserRole } from "@/lib/constants"
 
 const NAV = [
-  { href: "/admin", icon: LayoutDashboard, key: "admin.nav.overview", exact: true },
-  { href: "/admin/applications", icon: FileText, key: "admin.nav.applications" },
-  { href: "/admin/reports", icon: BarChart3, key: "admin.nav.reports" },
-  { href: "/admin/export", icon: Download, key: "admin.nav.export" },
-  { href: "/admin/users", icon: Users, key: "admin.nav.users", adminOnly: true },
-  { href: "/admin/audit", icon: ScrollText, key: "admin.nav.audit", adminOnly: true },
-  { href: "/admin/settings", icon: Settings, key: "admin.nav.settings" },
+  { href: "/oes/admin", icon: LayoutDashboard, key: "admin.nav.overview", exact: true },
+  { href: "/oes/admin/applications", icon: FileText, key: "admin.nav.applications" },
+  { href: "/oes/admin/reports", icon: BarChart3, key: "admin.nav.reports" },
+  { href: "/oes/admin/export", icon: Download, key: "admin.nav.export" },
+  { href: "/oes/admin/users", icon: Users, key: "admin.nav.users", adminOnly: true },
+  { href: "/oes/admin/audit", icon: ScrollText, key: "admin.nav.audit", adminOnly: true },
+  { href: "/oes/admin/settings", icon: Settings, key: "admin.nav.settings" },
 ]
 
 export function AdminShell({
@@ -51,7 +51,7 @@ export function AdminShell({
   async function logout() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.replace("/admin/login")
+    router.replace("/oes/admin/login")
     router.refresh()
   }
 
@@ -63,7 +63,7 @@ export function AdminShell({
   const sidebar = (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex h-16 items-center border-b border-sidebar-border px-4">
-        <Link href="/admin" className="text-sidebar-foreground">
+        <Link href="/oes/admin" className="text-sidebar-foreground">
           <BrandLogo iconClassName="bg-sidebar-primary" />
         </Link>
       </div>
@@ -141,7 +141,7 @@ export function AdminShell({
           </Button>
           <div className="flex-1" />
           <LanguageSwitcher />
-          <Button variant="outline" size="sm" render={<Link href="/" />}>
+          <Button variant="outline" size="sm" render={<Link href="/oes" />}>
             {t("nav.home")}
           </Button>
         </header>

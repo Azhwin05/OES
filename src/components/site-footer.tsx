@@ -18,13 +18,13 @@ export function SiteFooter() {
           </p>
         </div>
         <div className="flex items-center gap-4 text-sm">
-          <Link href="/track" className="text-muted-foreground hover:text-foreground">
+          <Link href="/oes/track" className="text-muted-foreground hover:text-foreground">
             {t("nav.track")}
           </Link>
-          <Link href="/contact" className="text-muted-foreground hover:text-foreground">
+          <Link href="/oes/contact" className="text-muted-foreground hover:text-foreground">
             {t("footer.contact")}
           </Link>
-          <Link href="/admin/login" className="text-muted-foreground hover:text-foreground">
+          <Link href="/oes/admin/login" className="text-muted-foreground hover:text-foreground">
             {t("nav.adminLogin")}
           </Link>
         </div>

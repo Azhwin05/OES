@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog"
 import { StatusBadge } from "@/components/status-badge"
 import { useT } from "@/lib/i18n/context"
-import { updateStatus, addRemark, softDeleteApplications, getDocumentSignedUrl } from "@/app/admin/actions"
+import { updateStatus, addRemark, softDeleteApplications, getDocumentSignedUrl } from "@/app/oes/admin/actions"
 import type { AppStatus } from "@/lib/constants"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -94,7 +94,7 @@ export function ApplicationDetail({
     setConfirmDel(false)
     if (res.ok) {
       toast.success(t("common.delete"))
-      router.push("/admin/applications")
+      router.push("/oes/admin/applications")
     } else toast.error(t("err.unauthorized"))
   }
 
@@ -130,7 +130,7 @@ export function ApplicationDetail({
     <div className="space-y-5">
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Button variant="ghost" size="icon-sm" render={<Link href="/admin/applications" />}>
+          <Button variant="ghost" size="icon-sm" render={<Link href="/oes/admin/applications" />}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="min-w-0">

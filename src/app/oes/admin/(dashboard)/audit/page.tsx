@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic"
 
 export default async function AuditPage() {
   const user = await requireStaff()
-  if (user.profile!.role === "viewer") redirect("/admin")
+  if (user.profile!.role === "viewer") redirect("/oes/admin")
   const logs = (await getAuditLogs()) as AuditRow[]
   return (
     <div>

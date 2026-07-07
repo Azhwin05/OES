@@ -32,11 +32,11 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
   const isAdminArea =
-    pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")
+    pathname.startsWith("/oes/admin") && !pathname.startsWith("/oes/admin/login")
 
   if (isAdminArea && !user) {
     const url = request.nextUrl.clone()
-    url.pathname = "/admin/login"
+    url.pathname = "/oes/admin/login"
     url.searchParams.set("redirect", pathname)
     return NextResponse.redirect(url)
   }
@@ -45,5 +45,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/oes/admin/:path*"],
 }

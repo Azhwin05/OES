@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useT } from "@/lib/i18n/context"
 import { USER_ROLES, type UserRole } from "@/lib/constants"
-import { setUserRole } from "@/app/admin/actions"
+import { setUserRole } from "@/app/oes/admin/actions"
 import type { ProfileRow } from "@/lib/supabase/types"
 
 export function UsersView({

@@ -18,9 +18,8 @@ const notoTamil = Noto_Sans_Tamil({
 })
 
 export const metadata: Metadata = {
-  title: "OES — Online Enumeration System",
-  description:
-    "A secure online platform to collect, manage, and review educational beneficiary information.",
+  title: "Ooruni",
+  description: "Ooruni.com",
 }
 
 export const viewport: Viewport = {

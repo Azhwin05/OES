@@ -48,8 +48,8 @@ export async function updateStatus(
   })
 
   revalidatePath(`/admin/applications/${applicationId}`)
-  revalidatePath("/admin/applications")
-  revalidatePath("/admin")
+  revalidatePath("/oes/admin/applications")
+  revalidatePath("/oes/admin")
   return { ok: true }
 }
 
@@ -101,8 +101,8 @@ export async function softDeleteApplications(
     actorId: user!.id,
     actorEmail: user!.email,
   })
-  revalidatePath("/admin/applications")
-  revalidatePath("/admin")
+  revalidatePath("/oes/admin/applications")
+  revalidatePath("/oes/admin")
   return { ok: true }
 }
 
@@ -130,7 +130,7 @@ export async function setUserRole(
     actorId: user!.id,
     actorEmail: user!.email,
   })
-  revalidatePath("/admin/users")
+  revalidatePath("/oes/admin/users")
   return { ok: true }
 }
 

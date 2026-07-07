@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "OES — Online Enumeration System",
+  title: "OES — Ooruni Education System",
   description:
     "A secure online platform to collect, manage, and review educational beneficiary information.",
 }

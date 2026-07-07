@@ -24,7 +24,7 @@ export function generateApplicationPdf(
 
   doc.setFontSize(18)
   doc.setTextColor(30, 58, 138)
-  doc.text("OES — Online Enumeration System", marginX, 50)
+  doc.text("OES — Ooruni Education System", marginX, 50)
   doc.setFontSize(11)
   doc.setTextColor(80)
   doc.text("Application Summary", marginX, 70)

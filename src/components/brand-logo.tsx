@@ -21,7 +21,7 @@ export function BrandLogo({
       <span className="flex flex-col leading-none">
         <span className="text-base font-bold tracking-tight">OES</span>
         <span className="text-muted-foreground text-[10px] font-medium">
-          Online Enumeration System
+          Ooruni Education System
         </span>
       </span>
     </span>

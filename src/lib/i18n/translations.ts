@@ -13,7 +13,7 @@ type Dict = Record<string, string>
 const en: Dict = {
   // Brand
   "brand.short": "OES",
-  "brand.full": "Online Enumeration System",
+  "brand.full": "Ooruni Education System",
   "brand.tagline": "A secure online platform to collect, manage, and review educational beneficiary information.",
 
   // Nav
@@ -67,7 +67,7 @@ const en: Dict = {
   "home.hero.cta.admin": "Admin Login",
   "home.about.title": "What is OES?",
   "home.about.body":
-    "The Online Enumeration System (OES) is a digital platform that lets students and applicants submit their educational and family details online. The data is stored securely and reviewed by authorized administrators to support scholarships and welfare programs.",
+    "The Ooruni Education System (OES) is a digital platform that lets students and applicants submit their educational and family details online. The data is stored securely and reviewed by authorized administrators to support scholarships and welfare programs.",
   "home.benefits.title": "Benefits",
   "home.benefits.1.title": "Paperless & Fast",
   "home.benefits.1.body": "Submit your details from any device in minutes — no queues, no paperwork.",
@@ -418,7 +418,7 @@ const en: Dict = {
 
 const ta: Dict = {
   "brand.short": "ஓ.இ.எஸ்",
-  "brand.full": "ஆன்லைன் கணக்கெடுப்பு அமைப்பு",
+  "brand.full": "ஊருணி கல்வி அமைப்பு",
   "brand.tagline":
     "கல்வி பயனாளர்களின் தகவல்களை பாதுகாப்பாக சேகரிக்கவும், நிர்வகிக்கவும், மதிப்பாய்வு செய்யவும் உருவாக்கப்பட்ட ஆன்லைன் தளம்.",
 
@@ -470,7 +470,7 @@ const ta: Dict = {
   "home.hero.cta.admin": "நிர்வாகி உள்நுழைவு",
   "home.about.title": "ஓ.இ.எஸ் என்றால் என்ன?",
   "home.about.body":
-    "ஆன்லைன் கணக்கெடுப்பு அமைப்பு (OES) என்பது மாணவர்கள் மற்றும் விண்ணப்பதாரர்கள் தங்கள் கல்வி மற்றும் குடும்ப தகவல்களை ஆன்லைனில் சமர்ப்பிக்க உதவும் ஒரு டிஜிட்டல் தளமாகும். தரவு பாதுகாப்பாக சேமிக்கப்பட்டு, உதவித்தொகை மற்றும் நலத்திட்டங்களுக்காக அங்கீகரிக்கப்பட்ட நிர்வாகிகளால் மதிப்பாய்வு செய்யப்படுகிறது.",
+    "ஊருணி கல்வி அமைப்பு (OES) என்பது மாணவர்கள் மற்றும் விண்ணப்பதாரர்கள் தங்கள் கல்வி மற்றும் குடும்ப தகவல்களை ஆன்லைனில் சமர்ப்பிக்க உதவும் ஒரு டிஜிட்டல் தளமாகும். தரவு பாதுகாப்பாக சேமிக்கப்பட்டு, உதவித்தொகை மற்றும் நலத்திட்டங்களுக்காக அங்கீகரிக்கப்பட்ட நிர்வாகிகளால் மதிப்பாய்வு செய்யப்படுகிறது.",
   "home.benefits.title": "நன்மைகள்",
   "home.benefits.1.title": "காகிதமற்ற & வேகமான",
   "home.benefits.1.body": "எந்த சாதனத்திலிருந்தும் சில நிமிடங்களில் உங்கள் தகவல்களை சமர்ப்பிக்கவும் — வரிசை இல்லை, காகிதம் இல்லை.",

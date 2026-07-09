@@ -72,7 +72,7 @@ export default function TrackPage() {
               <Label htmlFor="reference">{t("track.refNumber")}</Label>
               <Input
                 id="reference"
-                placeholder="OES-2026-000123"
+                placeholder="OES20260123"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
                 required

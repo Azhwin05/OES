@@ -23,7 +23,7 @@ test.describe("OES public site", () => {
 
   test("track lookup of an unknown reference shows not-found", async ({ page }) => {
     await page.goto("/oes/track")
-    await page.getByLabel(/Reference Number/i).fill("OES-2026-999999")
+    await page.getByLabel(/Reference Number/i).fill("OES20269999")
     await page.getByLabel(/Phone Number/i).fill("9000000000")
     await page.getByRole("button", { name: /Check Status/i }).click()
     await expect(page.getByText(/No application found/i)).toBeVisible({ timeout: 15_000 })

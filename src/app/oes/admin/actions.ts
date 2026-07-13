@@ -106,6 +106,38 @@ export async function softDeleteApplications(
   return { ok: true }
 }
 
+/**
+ * Toggles the `shortlisted` flag only — never touches any other application
+ * field. This is the single write action on the Shortlisting page.
+ */
+export async function setShortlisted(
+  ids: string[],
+  value: boolean
+): Promise<ActionResult> {
+  const user = await getSessionUser()
+  if (!canManage(user)) return { ok: false, error: "unauthorized" }
+  if (ids.length === 0) return { ok: false, error: "empty" }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from("oes_applications")
+    .update({ shortlisted: value, updated_by: user!.id })
+    .in("id", ids)
+  if (error) return { ok: false, error: "server" }
+
+  await writeAudit({
+    action: value ? "application.shortlisted" : "application.unshortlisted",
+    entity: "application",
+    details: { ids, count: ids.length },
+    actorId: user!.id,
+    actorEmail: user!.email,
+  })
+  revalidatePath("/oes/admin/shortlist")
+  revalidatePath("/oes/admin/applications")
+  revalidatePath("/oes/admin")
+  return { ok: true }
+}
+
 export async function setUserRole(
   userId: string,
   role: UserRole

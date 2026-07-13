@@ -11,6 +11,7 @@ import {
   Users,
   Settings,
   ScrollText,
+  ListChecks,
   LogOut,
   Menu,
   X,
@@ -27,6 +28,7 @@ import type { UserRole } from "@/lib/constants"
 const NAV = [
   { href: "/oes/admin", icon: LayoutDashboard, key: "admin.nav.overview", exact: true },
   { href: "/oes/admin/applications", icon: FileText, key: "admin.nav.applications" },
+  { href: "/oes/admin/shortlist", icon: ListChecks, key: "admin.nav.shortlist" },
   { href: "/oes/admin/reports", icon: BarChart3, key: "admin.nav.reports" },
   { href: "/oes/admin/export", icon: Download, key: "admin.nav.export" },
   { href: "/oes/admin/users", icon: Users, key: "admin.nav.users", adminOnly: true },

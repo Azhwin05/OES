@@ -181,6 +181,109 @@ export async function getApplicationDetail(id: string) {
   return data
 }
 
+const SHORTLIST_SELECT = `
+  id, reference_number, status, submitted_at, applicant_name, primary_phone, shortlisted,
+  oes_personal_details(full_name, contact_number, email, gender, dob, district, state, pincode),
+  oes_education_details(school_name, school_type, institution_name, institution_type, course_name, has_scholarship),
+  oes_family_details(parent_status, single_parent_reason),
+  oes_impairment_details(has_impairment),
+  oes_residence_details(residence_type, ownership_source, door_street, district, state, pincode)
+`
+
+type ShortlistEmbedded = {
+  id: string
+  reference_number: string
+  status: AppStatus
+  submitted_at: string
+  applicant_name: string
+  primary_phone: string
+  shortlisted: boolean
+  oes_personal_details: {
+    full_name: string | null
+    contact_number: string | null
+    email: string | null
+    gender: string | null
+    dob: string | null
+    district: string | null
+    state: string | null
+    pincode: string | null
+  }[]
+  oes_education_details: {
+    school_name: string | null
+    school_type: string | null
+    institution_name: string | null
+    institution_type: string | null
+    course_name: string | null
+    has_scholarship: boolean
+  }[]
+  oes_family_details: { parent_status: string | null; single_parent_reason: string | null }[]
+  oes_impairment_details: { has_impairment: boolean }[]
+  oes_residence_details: {
+    residence_type: string | null
+    ownership_source: string | null
+    door_street: string | null
+    district: string | null
+    state: string | null
+    pincode: string | null
+  }[]
+}
+
+/**
+ * Read-only pool for the Shortlisting page. Pulls every field the shortlist
+ * logic (lib/shortlist.ts) needs to classify applications, but never writes.
+ */
+export async function getShortlistPool(): Promise<import("@/lib/shortlist").ShortlistRow[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from("oes_applications")
+    .select(SHORTLIST_SELECT)
+    .is("deleted_at", null)
+    .order("submitted_at", { ascending: false })
+  if (error) {
+    console.error("getShortlistPool", error)
+    return []
+  }
+  return (data as unknown as ShortlistEmbedded[]).map((r) => {
+    const p = r.oes_personal_details?.[0]
+    const e = r.oes_education_details?.[0]
+    const fam = r.oes_family_details?.[0]
+    const im = r.oes_impairment_details?.[0]
+    const re = r.oes_residence_details?.[0]
+    return {
+      id: r.id,
+      reference_number: r.reference_number,
+      status: r.status,
+      submitted_at: r.submitted_at,
+      applicant_name: r.applicant_name,
+      primary_phone: r.primary_phone,
+      shortlisted: r.shortlisted,
+      full_name: p?.full_name ?? null,
+      contact_number: p?.contact_number ?? null,
+      email: p?.email ?? null,
+      gender: p?.gender ?? null,
+      dob: p?.dob ?? null,
+      district: p?.district ?? null,
+      state: p?.state ?? null,
+      pincode: p?.pincode ?? null,
+      school_name: e?.school_name ?? null,
+      school_type: e?.school_type ?? null,
+      institution_name: e?.institution_name ?? null,
+      institution_type: e?.institution_type ?? null,
+      course_name: e?.course_name ?? null,
+      has_scholarship: e?.has_scholarship ?? false,
+      parent_status: fam?.parent_status ?? null,
+      single_parent_reason: fam?.single_parent_reason ?? null,
+      has_impairment: im?.has_impairment ?? false,
+      residence_type: re?.residence_type ?? null,
+      ownership_source: re?.ownership_source ?? null,
+      door_street: re?.door_street ?? null,
+      res_district: re?.district ?? null,
+      res_state: re?.state ?? null,
+      res_pincode: re?.pincode ?? null,
+    }
+  })
+}
+
 export async function getAuditLogs(limit = 200) {
   const admin = createAdminClient()
   const { data } = await admin

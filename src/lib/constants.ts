@@ -50,6 +50,55 @@ export function bucketForDocType(t: DocumentType): string {
   return t === "student_photo" ? PHOTO_BUCKET : DOCS_BUCKET
 }
 
+// --- Secondary data collection (post-shortlist document upload) ------------
+export const SECONDARY_DOCUMENT_TYPES = [
+  "aadhaar",
+  "student_id",
+  "marksheet_10",
+  "marksheet_12",
+  "first_graduate",
+  "scholarship",
+  "parent_aadhaar",
+  "income_proof",
+  "single_parent_proof",
+  "disability_cert",
+  "address_proof",
+  "eb_bill",
+] as const
+export type SecondaryDocumentType = (typeof SECONDARY_DOCUMENT_TYPES)[number]
+
+// Mandatory per the client's checklist — only 12th marksheet and address
+// proof are optional.
+export const SECONDARY_DOCUMENT_MANDATORY: Record<SecondaryDocumentType, boolean> = {
+  aadhaar: true,
+  student_id: true,
+  marksheet_10: true,
+  marksheet_12: false,
+  first_graduate: true,
+  scholarship: true,
+  parent_aadhaar: true,
+  income_proof: true,
+  single_parent_proof: true,
+  disability_cert: true,
+  address_proof: false,
+  eb_bill: true,
+}
+
+export const SECONDARY_DOCUMENT_LABELS: Record<SecondaryDocumentType, string> = {
+  aadhaar: "Aadhar card of the applicant",
+  student_id: "Student ID of the current institution",
+  marksheet_10: "10th Mark sheet",
+  marksheet_12: "12th Mark sheet",
+  first_graduate: "First graduate certificate (if yes)",
+  scholarship: "Proof of availing scholarship (if any)",
+  parent_aadhaar: "Aadhar of the parent (Mother / Father / Guardian)",
+  income_proof: "Proof of income — parent / sibling (if any)",
+  single_parent_proof: "If single parent — deceased / separated proof",
+  disability_cert: "Disability certificate (if yes)",
+  address_proof: "Address proof",
+  eb_bill: "EB Bill",
+}
+
 // Visual config for statuses (Tailwind classes + i18n key).
 export const STATUS_CONFIG: Record<
   AppStatus,

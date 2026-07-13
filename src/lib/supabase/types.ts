@@ -9,6 +9,7 @@ import type {
   SingleReason,
   UserRole,
   DocumentType,
+  SecondaryDocumentType,
 } from "@/lib/constants"
 
 type Timestamps = {
@@ -34,6 +35,8 @@ export type ApplicationRow = {
   created_by: string | null
   updated_by: string | null
   deleted_at: string | null
+  shortlisted: boolean
+  secondary_submitted_at: string | null
 } & Timestamps
 
 export type PersonalRow = {
@@ -114,7 +117,7 @@ export type ResidenceRow = {
 export type DocumentRow = {
   id: string
   application_id: string
-  document_type: DocumentType
+  document_type: DocumentType | SecondaryDocumentType
   bucket: string
   path: string
   file_name: string | null
@@ -152,6 +155,19 @@ export type AuditRow = {
   created_at: string
 }
 
+export type SecondarySettingsRow = {
+  id: true
+  password_hash: string | null
+  updated_at: string
+}
+
+export type ApplicantSessionRow = {
+  token: string
+  application_id: string
+  created_at: string
+  expires_at: string
+}
+
 type TableDef<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
   Row: Row
   Insert: Insert
@@ -174,6 +190,8 @@ export type Database = {
       oes_application_status_history: TableDef<StatusHistoryRow>
       oes_admin_remarks: TableDef<RemarkRow>
       oes_audit_logs: TableDef<AuditRow>
+      oes_secondary_settings: TableDef<SecondarySettingsRow>
+      oes_applicant_sessions: TableDef<ApplicantSessionRow>
     }
     Views: Record<string, never>
     Functions: {

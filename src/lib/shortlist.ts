@@ -1,6 +1,7 @@
 // Pure, read-only shortlisting logic. Never mutates data — it only classifies
-// rows already fetched from the database into buckets for the admin to review.
-// The only place a write happens is the explicit "mark shortlisted" action.
+// rows already fetched from the database so the admin UI can toggle criteria
+// on/off and see the matching set change live. The only place a write
+// happens anywhere in this feature is the explicit "mark shortlisted" action.
 
 import type { AppStatus } from "@/lib/constants"
 
@@ -44,19 +45,37 @@ export type ShortlistRow = {
 
 export type ExclusionReason = { type: "other" | "blank"; field: string }
 
-export type PriorityTier = 1 | 2 | 3 | 4
+export type CriterionKey = "impairment" | "parentless" | "singleParent" | "bothParents"
 
-export const PRIORITY_LABELS: Record<PriorityTier, string> = {
-  1: "shortlist.priority1.title",
-  2: "shortlist.priority2.title",
-  3: "shortlist.priority3.title",
-  4: "shortlist.priority4.title",
+export const CRITERIA_ORDER: CriterionKey[] = [
+  "impairment",
+  "parentless",
+  "singleParent",
+  "bothParents",
+]
+
+export const CRITERION_LABEL_KEYS: Record<CriterionKey, string> = {
+  impairment: "shortlist.priority1.title",
+  parentless: "shortlist.priority2.title",
+  singleParent: "shortlist.priority3.title",
+  bothParents: "shortlist.priority4.title",
 }
 
-export type PriorityEntry = {
+export const CRITERION_DESC_KEYS: Record<CriterionKey, string> = {
+  impairment: "shortlist.priority1.desc",
+  parentless: "shortlist.priority2.desc",
+  singleParent: "shortlist.priority3.desc",
+  bothParents: "shortlist.priority4.desc",
+}
+
+export type ClassifiedRow = {
   row: ShortlistRow
-  reasons: string[]
+  otherReasons: ExclusionReason[]
+  blankReasons: ExclusionReason[]
   isDuplicate: boolean
+  duplicateGroupId: string | null
+  matches: Record<CriterionKey, boolean>
+  matchReasons: Record<CriterionKey, string[]>
 }
 
 export type DuplicateGroup = {
@@ -65,19 +84,11 @@ export type DuplicateGroup = {
   rows: ShortlistRow[]
 }
 
-export type ShortlistReport = {
+export type ShortlistIndex = {
   total: number
-  excludedOther: { row: ShortlistRow; reasons: ExclusionReason[] }[]
-  excludedBlank: { row: ShortlistRow; reasons: ExclusionReason[] }[]
-  excludedIds: Set<string>
+  classified: ClassifiedRow[]
   duplicateGroups: DuplicateGroup[]
-  duplicateIds: Set<string>
-  cleanCount: number
-  priorityGroups: Record<PriorityTier, PriorityEntry[]>
-  notEligible: PriorityRowLite[]
 }
-
-type PriorityRowLite = { row: ShortlistRow; isDuplicate: boolean }
 
 function norm(s?: string | null): string {
   return (s ?? "").trim().toLowerCase().replace(/\s+/g, " ")
@@ -219,13 +230,31 @@ function buildDuplicateGroups(rows: ShortlistRow[]): DuplicateGroup[] {
   return result
 }
 
-// --- Priority classification -------------------------------------------------
-function classifyPriority(r: ShortlistRow): { tier: PriorityTier; reasons: string[] } | null {
+// --- Per-criterion matching (independent, not mutually exclusive) ----------
+function classifyMatches(r: ShortlistRow): {
+  matches: Record<CriterionKey, boolean>
+  matchReasons: Record<CriterionKey, string[]>
+} {
+  const matches = {
+    impairment: false,
+    parentless: false,
+    singleParent: false,
+    bothParents: false,
+  } as Record<CriterionKey, boolean>
+  const matchReasons = {
+    impairment: [] as string[],
+    parentless: [] as string[],
+    singleParent: [] as string[],
+    bothParents: [] as string[],
+  }
+
   if (r.has_impairment) {
-    return { tier: 1, reasons: ["Has an impairment (self or family)"] }
+    matches.impairment = true
+    matchReasons.impairment.push("Has an impairment (self or family)")
   }
   if (r.parent_status === "parentless") {
-    return { tier: 2, reasons: ["Applicant is parentless"] }
+    matches.parentless = true
+    matchReasons.parentless.push("Applicant is parentless")
   }
   if (r.parent_status === "single") {
     const reasons: string[] = []
@@ -233,7 +262,10 @@ function classifyPriority(r: ShortlistRow): { tier: PriorityTier; reasons: strin
     if (r.has_scholarship === false) reasons.push("No scholarship")
     if (r.institution_type === "government") reasons.push("Government institution")
     if (r.residence_type === "rental") reasons.push("Rental house")
-    if (reasons.length > 0) return { tier: 3, reasons }
+    if (reasons.length > 0) {
+      matches.singleParent = true
+      matchReasons.singleParent = reasons
+    }
   }
   if (r.parent_status === "both") {
     const reasons: string[] = []
@@ -241,59 +273,32 @@ function classifyPriority(r: ShortlistRow): { tier: PriorityTier; reasons: strin
     if (r.school_type === "government") reasons.push("Government schooling")
     if (r.institution_type === "government") reasons.push("Government institution")
     if (r.residence_type === "rental") reasons.push("Rental house")
-    if (reasons.length > 0) return { tier: 4, reasons }
+    if (reasons.length > 0) {
+      matches.bothParents = true
+      matchReasons.bothParents = reasons
+    }
   }
-  return null
+
+  return { matches, matchReasons }
 }
 
-export function buildShortlistReport(rows: ShortlistRow[]): ShortlistReport {
-  const excludedOther: { row: ShortlistRow; reasons: ExclusionReason[] }[] = []
-  const excludedBlank: { row: ShortlistRow; reasons: ExclusionReason[] }[] = []
-  const excludedIds = new Set<string>()
-
-  for (const r of rows) {
-    const other = findOtherReasons(r)
-    const blank = findBlankReasons(r)
-    if (other.length > 0) {
-      excludedOther.push({ row: r, reasons: other })
-      excludedIds.add(r.id)
-    }
-    if (blank.length > 0) {
-      excludedBlank.push({ row: r, reasons: blank })
-      excludedIds.add(r.id)
-    }
-  }
-
-  // Duplicates are detected across ALL rows (even excluded ones) so the admin
-  // sees the full picture, but they only gate the clean/priority pool as a flag.
+export function buildShortlistIndex(rows: ShortlistRow[]): ShortlistIndex {
   const duplicateGroups = buildDuplicateGroups(rows)
-  const duplicateIds = new Set<string>()
-  duplicateGroups.forEach((g) => g.rows.forEach((r) => duplicateIds.add(r.id)))
+  const duplicateGroupByRow = new Map<string, string>()
+  duplicateGroups.forEach((g) => g.rows.forEach((r) => duplicateGroupByRow.set(r.id, g.id)))
 
-  const clean = rows.filter((r) => !excludedIds.has(r.id))
-
-  const priorityGroups: Record<PriorityTier, PriorityEntry[]> = { 1: [], 2: [], 3: [], 4: [] }
-  const notEligible: PriorityRowLite[] = []
-
-  for (const r of clean) {
-    const result = classifyPriority(r)
-    const isDuplicate = duplicateIds.has(r.id)
-    if (result) {
-      priorityGroups[result.tier].push({ row: r, reasons: result.reasons, isDuplicate })
-    } else {
-      notEligible.push({ row: r, isDuplicate })
+  const classified: ClassifiedRow[] = rows.map((row) => {
+    const { matches, matchReasons } = classifyMatches(row)
+    return {
+      row,
+      otherReasons: findOtherReasons(row),
+      blankReasons: findBlankReasons(row),
+      isDuplicate: duplicateGroupByRow.has(row.id),
+      duplicateGroupId: duplicateGroupByRow.get(row.id) ?? null,
+      matches,
+      matchReasons,
     }
-  }
+  })
 
-  return {
-    total: rows.length,
-    excludedOther,
-    excludedBlank,
-    excludedIds,
-    duplicateGroups,
-    duplicateIds,
-    cleanCount: clean.length,
-    priorityGroups,
-    notEligible,
-  }
+  return { total: rows.length, classified, duplicateGroups }
 }

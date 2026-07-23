@@ -27,7 +27,7 @@ export async function secondaryLogin(
   // Fetch application with shortlist status and hashed password
   const { data: app, error } = await admin
     .from("oes_applications")
-    .select("id, shortlisted, deleted_at, secondary_password_hash, full_name")
+    .select("id, reference_number, applicant_name, shortlisted, deleted_at, secondary_password_hash")
     .eq("reference_number", reference)
     .is("deleted_at", null)
     .single()
@@ -46,7 +46,7 @@ export async function secondaryLogin(
     action: "secondary.login",
     entity: "application",
     entityId: app.id,
-    details: { reference, applicantName: app.full_name },
+    details: { reference, applicantName: app.applicant_name },
   })
 
   return { ok: true }

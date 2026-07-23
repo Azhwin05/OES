@@ -16,8 +16,8 @@ export default function SecondaryCountdownPage() {
     setMounted(true)
 
     const updateCountdown = () => {
-      // July 23, 2026, 12:00 PM Noon IST (UTC+5:30)
-      const targetDate = new Date('2026-07-23T12:00:00+05:30').getTime()
+      // July 24, 2026, 6:00 AM IST (UTC+5:30)
+      const targetDate = new Date('2026-07-24T06:00:00+05:30').getTime()
       const now = new Date().getTime()
       const difference = targetDate - now
 
@@ -59,14 +59,14 @@ export default function SecondaryCountdownPage() {
             Secondary Submission Portal
           </h1>
           <p className="text-lg text-indigo-600 font-semibold">
-            🎯 Opening TODAY at 12:00 PM
+            🎯 Opening TOMORROW at 6:00 AM
           </p>
         </div>
 
         {/* Countdown Timer */}
         <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
           <p className="text-gray-700 font-medium">
-            Opens TODAY at <span className="text-indigo-600 font-bold">12:00 PM (Noon)</span>
+            Opens TOMORROW at <span className="text-indigo-600 font-bold">6:00 AM</span>
           </p>
 
           <div className="grid grid-cols-4 gap-3">

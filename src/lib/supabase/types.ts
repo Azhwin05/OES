@@ -37,6 +37,7 @@ export type ApplicationRow = {
   deleted_at: string | null
   shortlisted: boolean
   secondary_submitted_at: string | null
+  secondary_password_hash: string | null
 } & Timestamps
 
 export type PersonalRow = {

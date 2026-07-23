@@ -41,9 +41,20 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Applicant secondary-data portal: separate session, not Supabase auth.
+  const isSecondaryPortal = pathname.startsWith("/oes/secondary/portal")
+  if (isSecondaryPortal) {
+    const hasSecondarySession = !!request.cookies.get("oes_secondary_session")?.value
+    if (!hasSecondarySession) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/oes/secondary/login"
+      return NextResponse.redirect(url)
+    }
+  }
+
   return response
 }
 
 export const config = {
-  matcher: ["/oes/admin/:path*"],
+  matcher: ["/oes/admin/:path*", "/oes/secondary/portal/:path*"],
 }

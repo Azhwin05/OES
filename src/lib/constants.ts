@@ -60,26 +60,30 @@ export const SECONDARY_DOCUMENT_TYPES = [
   "scholarship",
   "parent_aadhaar",
   "income_proof",
-  "single_parent_proof",
   "disability_cert",
+  "death_certificate",
+  "legal_separation_proof",
+  "vao_letter",
   "address_proof",
   "eb_bill",
 ] as const
 export type SecondaryDocumentType = (typeof SECONDARY_DOCUMENT_TYPES)[number]
 
-// Mandatory per the client's checklist — only 12th marksheet and address
-// proof are optional.
-export const SECONDARY_DOCUMENT_MANDATORY: Record<SecondaryDocumentType, boolean> = {
+// Documents whose mandatory/optional status never depends on an answer.
+// (12th marksheet and address proof are the only always-optional ones.)
+export const SECONDARY_DOCUMENT_BASE_MANDATORY: Record<SecondaryDocumentType, boolean> = {
   aadhaar: true,
   student_id: true,
   marksheet_10: true,
   marksheet_12: false,
-  first_graduate: true,
-  scholarship: true,
+  first_graduate: false, // gated by firstGraduate answer
+  scholarship: false, // gated by hasOtherScholarship answer
   parent_aadhaar: true,
   income_proof: true,
-  single_parent_proof: true,
-  disability_cert: true,
+  disability_cert: false, // gated by existing impairment data
+  death_certificate: false, // gated by singleParentReason
+  legal_separation_proof: false, // gated by singleParentReason
+  vao_letter: false, // gated by singleParentReason
   address_proof: false,
   eb_bill: true,
 }
@@ -89,14 +93,76 @@ export const SECONDARY_DOCUMENT_LABELS: Record<SecondaryDocumentType, string> = 
   student_id: "Student ID of the current institution",
   marksheet_10: "10th Mark sheet",
   marksheet_12: "12th Mark sheet",
-  first_graduate: "First graduate certificate (if yes)",
-  scholarship: "Proof of availing scholarship (if any)",
+  first_graduate: "First graduate certificate",
+  scholarship: "Proof of availing scholarship",
   parent_aadhaar: "Aadhar of the parent (Mother / Father / Guardian)",
-  income_proof: "Proof of income — parent / sibling (if any)",
-  single_parent_proof: "If single parent — deceased / separated proof",
-  disability_cert: "Disability certificate (if yes)",
+  income_proof: "Proof of income",
+  disability_cert: "Disability certificate",
+  death_certificate: "Death certificate",
+  legal_separation_proof: "Legal separation proof",
+  vao_letter: "Letter from VAO with witness",
   address_proof: "Address proof",
   eb_bill: "EB Bill",
+}
+
+// --- Secondary form: conditional questions ----------------------------------
+export const INCOME_PROOF_FOR = ["parent", "sibling", "guardian"] as const
+export type IncomeProofFor = (typeof INCOME_PROOF_FOR)[number]
+export const INCOME_PROOF_FOR_LABELS: Record<IncomeProofFor, string> = {
+  parent: "Parent",
+  sibling: "Sibling",
+  guardian: "Guardian",
+}
+
+export const SINGLE_PARENT_LIVING_WITH = ["mother", "father", "guardian"] as const
+export type SingleParentLivingWith = (typeof SINGLE_PARENT_LIVING_WITH)[number]
+export const SINGLE_PARENT_LIVING_WITH_LABELS: Record<SingleParentLivingWith, string> = {
+  mother: "Mother",
+  father: "Father",
+  guardian: "Guardian",
+}
+
+export const SINGLE_PARENT_REASONS = ["deceased", "legally_separated", "separated"] as const
+export type SingleParentReasonSecondary = (typeof SINGLE_PARENT_REASONS)[number]
+export const SINGLE_PARENT_REASON_LABELS: Record<SingleParentReasonSecondary, string> = {
+  deceased: "Deceased",
+  legally_separated: "Legally separated",
+  separated: "Separated",
+}
+
+export type SecondaryAnswers = {
+  firstGraduate: boolean | null
+  hasOtherScholarship: boolean | null
+  incomeProofFor: IncomeProofFor[]
+  singleParentLivingWith: SingleParentLivingWith | null
+  singleParentReason: SingleParentReasonSecondary | null
+}
+
+/**
+ * Merges the static checklist with answer-gated requirements. Run on both
+ * client (for live UI feedback) and server (for enforcement) so the two
+ * never disagree.
+ */
+export function computeSecondaryMandatory(
+  answers: SecondaryAnswers,
+  hasImpairment: boolean
+): Record<SecondaryDocumentType, boolean> {
+  const mandatory = { ...SECONDARY_DOCUMENT_BASE_MANDATORY }
+
+  if (answers.firstGraduate === true) mandatory.first_graduate = true
+  if (answers.hasOtherScholarship === true) mandatory.scholarship = true
+  if (hasImpairment) mandatory.disability_cert = true
+
+  if (answers.singleParentReason === "deceased") {
+    mandatory.death_certificate = true
+    mandatory.vao_letter = true
+  } else if (answers.singleParentReason === "legally_separated") {
+    mandatory.legal_separation_proof = true
+  } else if (answers.singleParentReason === "separated") {
+    mandatory.vao_letter = true
+  }
+
+  return mandatory
 }
 
 // Visual config for statuses (Tailwind classes + i18n key).

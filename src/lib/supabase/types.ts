@@ -168,6 +168,15 @@ export type ApplicantSessionRow = {
   expires_at: string
 }
 
+export type SecondaryAnswersRow = {
+  application_id: string
+  first_graduate: boolean | null
+  has_other_scholarship: boolean | null
+  income_proof_for: string[]
+  single_parent_living_with: string | null
+  single_parent_reason: string | null
+} & Timestamps
+
 type TableDef<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
   Row: Row
   Insert: Insert
@@ -192,6 +201,7 @@ export type Database = {
       oes_audit_logs: TableDef<AuditRow>
       oes_secondary_settings: TableDef<SecondarySettingsRow>
       oes_applicant_sessions: TableDef<ApplicantSessionRow>
+      oes_secondary_answers: TableDef<SecondaryAnswersRow>
     }
     Views: Record<string, never>
     Functions: {

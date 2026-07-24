@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Income Self-Declaration Form</title>
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #201d18;
+    --ink-soft: #55503f;
+    --rule: #c6c0b1;
+    --rule-strong: #a49c87;
+    --accent: #6e1423;
+    --field-line: #8f8875;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+  }
+
+  .sheet {
+    width: 210mm;
+    min-height: 297mm;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 16mm 15mm 14mm;
+    font-family: Georgia, "Noto Serif", "Times New Roman", serif;
+  }
+
+  .letterhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+  }
+  .letterhead-org {
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+  }
+  .letterhead-org .name {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+  .letterhead-org .sub {
+    margin-top: 3px;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    letter-spacing: 0.03em;
+  }
+  .letterhead-meta {
+    text-align: right;
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .letterhead-meta .code {
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .title-block {
+    text-align: center;
+    margin: 22px 0 20px;
+  }
+  .title-block h1 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .title-block .kicker {
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .title-block .desc {
+    margin-top: 8px;
+    font-size: 12.5px;
+    font-style: italic;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+
+  .section { margin-top: 18px; }
+  .section-label {
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+  }
+
+  .field { font-size: 12.5px; }
+  .field label {
+    display: block;
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+    margin-bottom: 5px;
+  }
+  .fill-line {
+    border-bottom: 1px solid var(--field-line);
+    min-height: 19px;
+  }
+
+  .check-row {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    font-size: 12px;
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+  }
+  .check-row span { display: inline-flex; align-items: center; gap: 6px; }
+  .box {
+    width: 11px;
+    height: 11px;
+    border: 1.3px solid var(--ink);
+    display: inline-block;
+    flex: none;
+  }
+
+  table.income-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+  }
+  table.income-table th {
+    text-align: left;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule-strong);
+    background: #f6eeef;
+    padding: 7px 10px;
+  }
+  table.income-table td {
+    border: 1px solid var(--rule-strong);
+    padding: 16px 10px 8px;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    vertical-align: bottom;
+  }
+
+  .declaration {
+    margin-top: 20px;
+    font-size: 12.5px;
+    line-height: 1.85;
+    text-align: justify;
+  }
+  .declaration .blank {
+    display: inline-block;
+    min-width: 150px;
+    border-bottom: 1px solid var(--field-line);
+    height: 1em;
+    vertical-align: -3px;
+  }
+
+  .sig-grid {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  .sig-box { font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif; }
+  .sig-line { border-bottom: 1px solid var(--ink); height: 46px; }
+  .sig-label { margin-top: 6px; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
+  .sig-sub { font-size: 9px; color: var(--ink-soft); margin-top: 2px; line-height: 1.4; }
+
+  .footer-note {
+    margin-top: 26px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    font-family: -apple-system, "Segoe UI", "Inter", Helvetica, Arial, sans-serif;
+  }
+  .footer-note p {
+    margin: 0;
+    font-size: 10px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    max-width: 56ch;
+  }
+  .footer-note .page {
+    font-size: 9.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="letterhead">
+      <div class="letterhead-org">
+        <div class="name">Ooruni Foundation</div>
+        <div class="sub">OES Scholarship Programme &mdash; Secondary Document Verification</div>
+      </div>
+      <div class="letterhead-meta">
+        Form Ref: <span class="code">OES-IDF-01</span><br>
+        Date: <span class="code">____ / ____ / 2026</span>
+      </div>
+    </div>
+
+    <div class="title-block">
+      <div class="kicker">Employer-Attested Declaration</div>
+      <h1>Income Self-Declaration Form</h1>
+      <p class="desc">
+        For applicants whose parent, guardian, or earning family member works as a daily-wage
+        labourer and cannot provide a payslip or salary certificate.
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="section-label">1. Applicant Details</div>
+      <div class="field-grid">
+        <div class="field"><label>Applicant&rsquo;s Full Name</label><div class="fill-line"></div></div>
+        <div class="field"><label>OES Reference ID</label><div class="fill-line"></div></div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Relationship of Earning Member to Applicant</label>
+          <div class="check-row">
+            <span><span class="box"></span> Father</span>
+            <span><span class="box"></span> Mother</span>
+            <span><span class="box"></span> Guardian</span>
+            <span><span class="box"></span> Sibling</span>
+            <span><span class="box"></span> Self</span>
+          </div>
+        </div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Name of Earning Member</label><div class="fill-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">2. Employer / Work Details</div>
+      <div class="field-grid">
+        <div class="field"><label>Name of Employer / Contractor</label><div class="fill-line"></div></div>
+        <div class="field"><label>Employer Contact Number</label><div class="fill-line"></div></div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Nature of Work (e.g. construction labour, agricultural labour, domestic work, loading &amp; mill work)</label>
+          <div class="fill-line"></div>
+        </div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>Employer Address / Worksite Location</label><div class="fill-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">3. Income Details</div>
+      <table class="income-table">
+        <thead>
+          <tr>
+            <th>Average Daily Wage (&#8377;)</th>
+            <th>Average Working Days / Month</th>
+            <th>Estimated Total Monthly Income (&#8377;)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section declaration">
+      <div class="section-label">4. Employer&rsquo;s Declaration</div>
+      I, <span class="blank"></span> (name of employer / contractor), do hereby declare that
+      <span class="blank"></span> (name of earning member) is engaged under me as a daily-wage
+      worker in the capacity described above, and that the income particulars furnished in this
+      form are true and correct to the best of my knowledge. I understand that this declaration is
+      submitted in support of a scholarship application to Ooruni Foundation and may be verified
+      if required.
+    </div>
+
+    <div class="sig-grid">
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-label">Employer Signature / Seal</div>
+        <div class="sig-sub">or thumb impression, with date</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-label">Applicant / Guardian Signature</div>
+        <div class="sig-sub">confirming the details above are accurate</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-label">Attested by (optional)</div>
+        <div class="sig-sub">VAO / Ward Member / Panchayat President &mdash; office seal</div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <p>
+        Submit the signed and scanned copy of this form as your <strong>Proof of Income</strong>
+        document in the OES Secondary Submission Portal. Unsigned or incomplete forms cannot be
+        accepted as valid income proof.
+      </p>
+      <div class="page">Page 1 of 1</div>
+    </div>
+  </div>
+</body>
+</html>

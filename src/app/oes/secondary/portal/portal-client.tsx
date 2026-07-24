@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { LogOut, Upload, CheckCircle2, User, GraduationCap, Users } from "lucide-react"
+import { LogOut, Upload, Download, CheckCircle2, User, GraduationCap, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -451,6 +451,16 @@ export function SecondaryPortalClient({
                     <p className="text-xs text-destructive">
                       Upload failed. Use PDF/JPG/PNG under 5MB.
                     </p>
+                  )}
+                  {row.type === "income_proof" && (
+                    <a
+                      href="/forms/income-declaration-form.pdf"
+                      download
+                      className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    >
+                      <Download className="h-3 w-3" />
+                      No payslip? Download the income declaration format
+                    </a>
                   )}
                 </div>
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:bg-muted">

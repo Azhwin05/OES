@@ -13,6 +13,8 @@ export default function SecondaryCountdownPage() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // Hydration guard: avoids SSR/CSR text mismatch on first paint.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
 
     const updateCountdown = () => {

@@ -347,7 +347,7 @@
             <!-- Main Content -->
             <div class="content">
                 <div class="greeting">
-                    Hi <strong>{{FIRST_NAME}}</strong>,
+                    Hi <strong>{{ contact.FIRSTNAME }}</strong>,
                 </div>
 
                 <div class="message">
@@ -359,11 +359,11 @@
                     <h3>Your Access Credentials</h3>
                     <div class="credential-row">
                         <span class="credential-label">OES ID</span>
-                        <span class="credential-value">{{OES_ID}}</span>
+                        <span class="credential-value">{{ contact.OES_ID }}</span>
                     </div>
                     <div class="credential-row">
                         <span class="credential-label">Password</span>
-                        <span class="credential-value">{{PASSWORD}}</span>
+                        <span class="credential-value">{{ contact.PASSWORD }}</span>
                     </div>
                 </div>
 

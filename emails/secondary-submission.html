@@ -1,358 +1,388 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OES Secondary Submission Portal - Login Credentials</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #1a1a1a;
             line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
         }
-        .email-container {
+
+        .wrapper {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
             max-width: 600px;
             margin: 0 auto;
-            background: white;
+            background-color: #ffffff;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
+
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 40px 20px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 40px 30px;
             text-align: center;
-            color: white;
+            color: #ffffff;
         }
-        .logo {
-            max-width: 180px;
-            height: auto;
-            margin-bottom: 20px;
-        }
+
         .header h1 {
             font-size: 28px;
-            margin: 10px 0;
-            font-weight: 700;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
+
         .header p {
             font-size: 16px;
-            opacity: 0.95;
+            opacity: 0.9;
+            font-weight: 400;
         }
+
         .content {
             padding: 40px 30px;
         }
+
         .greeting {
-            font-size: 18px;
-            margin-bottom: 30px;
-            color: #333;
-        }
-        .greeting strong {
-            color: #667eea;
-        }
-        .congrats-box {
-            background: #f0f7ff;
-            border-left: 4px solid #667eea;
-            padding: 20px;
-            margin: 30px 0;
-            border-radius: 4px;
-        }
-        .congrats-box p {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 0;
-        }
-        .credentials-section {
-            background: #f9f9f9;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 25px;
-            margin: 30px 0;
-        }
-        .credentials-section h3 {
-            color: #667eea;
             font-size: 16px;
             margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        .greeting strong {
+            font-weight: 600;
+        }
+
+        .message {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+        }
+
+        .credentials-box {
+            background-color: #f0f4f8;
+            border-left: 4px solid #2c3e50;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 4px;
+        }
+
+        .credentials-box h3 {
+            font-size: 14px;
+            font-weight: 600;
             text-transform: uppercase;
+            color: #2c3e50;
+            margin-bottom: 15px;
             letter-spacing: 0.5px;
         }
+
         .credential-row {
             display: flex;
-            margin-bottom: 15px;
-            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e5ea;
         }
+
+        .credential-row:last-child {
+            border-bottom: none;
+        }
+
         .credential-label {
-            font-weight: 600;
-            color: #555;
-            min-width: 120px;
             font-size: 14px;
+            color: #666666;
+            font-weight: 500;
         }
+
         .credential-value {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px 15px;
+            font-size: 14px;
+            color: #1a1a1a;
+            font-weight: 600;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
-            color: #333;
-            flex: 1;
-            word-break: break-all;
+            letter-spacing: 0.5px;
         }
-        .portal-button {
+
+        .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px 40px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ffffff !important;
             text-decoration: none;
+            padding: 14px 40px;
             border-radius: 6px;
+            font-size: 15px;
             font-weight: 600;
-            font-size: 16px;
             margin: 30px 0;
-            text-align: center;
-            width: 100%;
-            box-sizing: border-box;
-            transition: transform 0.2s;
+            transition: opacity 0.2s;
+            border: none;
         }
-        .portal-button:hover {
-            transform: translateY(-2px);
+
+        .cta-button:hover {
+            opacity: 0.9;
         }
-        .info-section {
+
+        .timeline {
+            background-color: #fafbfc;
+            padding: 25px;
+            border-radius: 6px;
             margin: 30px 0;
         }
-        .info-section h4 {
-            color: #333;
-            font-size: 16px;
+
+        .timeline h3 {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #2c3e50;
+            margin-bottom: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .timeline-item {
+            display: flex;
             margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-label {
             font-weight: 600;
+            color: #2c3e50;
+            min-width: 100px;
+            margin-right: 15px;
         }
-        .info-list {
-            list-style: none;
-            padding: 0;
+
+        .timeline-text {
+            color: #4a4a4a;
         }
-        .info-list li {
-            padding: 8px 0;
+
+        .checklist {
+            background-color: #fafbfc;
+            padding: 25px;
+            border-radius: 6px;
+            margin: 30px 0;
+        }
+
+        .checklist h3 {
             font-size: 14px;
-            color: #555;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
         }
-        .info-list li:before {
-            content: "✓ ";
-            color: #667eea;
+
+        .checklist-item {
+            font-size: 14px;
+            color: #4a4a4a;
+            margin-bottom: 10px;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .checklist-item:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
             font-weight: bold;
-            margin-right: 8px;
         }
-        .timeline-box {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px 20px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .timeline-box p {
-            font-size: 14px;
-            color: #856404;
-            margin: 0;
-        }
-        .whatsapp-box {
-            background: #e8f5e9;
-            border: 2px solid #4caf50;
-            border-radius: 8px;
-            padding: 20px;
+
+        .support-section {
+            background-color: #fafbfc;
+            padding: 25px;
+            border-radius: 6px;
             margin: 30px 0;
             text-align: center;
         }
-        .whatsapp-box h4 {
-            color: #2e7d32;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-        .whatsapp-link {
-            display: inline-block;
-            background: #4caf50;
-            color: white;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
+
+        .support-section h3 {
             font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
         }
-        .whatsapp-link:hover {
-            background: #388e3c;
-        }
-        .support-section {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 6px;
-            margin: 30px 0;
-        }
-        .support-section h4 {
-            color: #333;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
+
         .support-section p {
             font-size: 14px;
-            color: #666;
-            margin: 5px 0;
+            color: #4a4a4a;
+            margin-bottom: 8px;
         }
-        .support-section a {
-            color: #667eea;
+
+        .support-link {
+            color: #2c3e50;
             text-decoration: none;
+            font-weight: 600;
         }
+
+        .support-link:hover {
+            text-decoration: underline;
+        }
+
         .footer {
-            background: #f9f9f9;
-            border-top: 1px solid #e0e0e0;
-            padding: 30px;
+            background-color: #f0f4f8;
+            padding: 25px 30px;
             text-align: center;
-            font-size: 12px;
-            color: #999;
+            border-top: 1px solid #e0e5ea;
         }
+
         .footer p {
-            margin: 5px 0;
+            font-size: 12px;
+            color: #666666;
+            margin-bottom: 8px;
         }
-        .divider {
-            height: 1px;
-            background: #e0e0e0;
-            margin: 30px 0;
+
+        .footer-links {
+            font-size: 12px;
+            color: #666666;
         }
-        @media (max-width: 600px) {
-            .email-container {
-                margin: 0;
-                border-radius: 0;
+
+        .footer-links a {
+            color: #2c3e50;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 25px 20px;
             }
+
             .header {
-                padding: 30px 15px;
+                padding: 30px 20px;
             }
+
             .header h1 {
                 font-size: 24px;
             }
-            .content {
-                padding: 25px 15px;
-            }
+
             .credential-row {
                 flex-direction: column;
-                align-items: flex-start;
             }
+
             .credential-label {
-                margin-bottom: 8px;
-                min-width: auto;
+                margin-bottom: 5px;
             }
-            .credential-value {
-                width: 100%;
+
+            .timeline-item {
+                flex-direction: column;
             }
-            .portal-button {
-                padding: 14px 30px;
-                font-size: 15px;
+
+            .timeline-label {
+                margin-bottom: 5px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="email-container">
-        <!-- Header -->
-        <div class="header">
-            <img src="https://res.cloudinary.com/dmhonzqrm/image/upload/v1783403036/Ooruni_logo_dbsggm.webp" alt="Ooruni Foundation" class="logo">
-            <h1>Secondary Submission Portal</h1>
-            <p>🎉 Your credentials are ready!</p>
-        </div>
-
-        <!-- Main Content -->
-        <div class="content">
-            <!-- Greeting -->
-            <div class="greeting">
-                Hi <strong>{{APPLICANT_NAME}}</strong>,
+    <div class="wrapper">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <h1>You're Shortlisted! 🎓</h1>
+                <p>Next step: Submit your documents</p>
             </div>
 
-            <!-- Congratulations Box -->
-            <div class="congrats-box">
-                <p><strong>Great News!</strong> Your application has been <strong>SHORTLISTED</strong> for the next round of Ooruni OES! 🎓</p>
-            </div>
-
-            <!-- Login Credentials -->
-            <div class="credentials-section">
-                <h3>📋 Your Login Credentials</h3>
-
-                <div class="credential-row">
-                    <div class="credential-label">OES ID:</div>
-                    <div class="credential-value">{{OES_ID}}</div>
+            <!-- Main Content -->
+            <div class="content">
+                <div class="greeting">
+                    Hi <strong>{{FIRST_NAME}}</strong>,
                 </div>
 
-                <div class="credential-row">
-                    <div class="credential-label">Password:</div>
-                    <div class="credential-value">{{PASSWORD}}</div>
+                <div class="message">
+                    Congratulations on making it to the next round of the Ooruni OES selection process. We're excited to move forward with your application. Your portal for secondary document submission is now ready.
+                </div>
+
+                <!-- Credentials -->
+                <div class="credentials-box">
+                    <h3>Your Access Credentials</h3>
+                    <div class="credential-row">
+                        <span class="credential-label">OES ID</span>
+                        <span class="credential-value">{{OES_ID}}</span>
+                    </div>
+                    <div class="credential-row">
+                        <span class="credential-label">Password</span>
+                        <span class="credential-value">{{PASSWORD}}</span>
+                    </div>
+                </div>
+
+                <!-- CTA Button -->
+                <div style="text-align: center;">
+                    <a href="https://www.ooruni.com/oes/secondary/login" class="cta-button">
+                        Open Submission Portal
+                    </a>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <h3>Important Dates</h3>
+                    <div class="timeline-item">
+                        <span class="timeline-label">Tomorrow</span>
+                        <span class="timeline-text">Portal opens at 6:00 AM IST</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-label">Deadline</span>
+                        <span class="timeline-text">July 31st, 2026 at 11:59 PM IST</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-label">Window</span>
+                        <span class="timeline-text">7 days to complete your submission</span>
+                    </div>
+                </div>
+
+                <!-- Checklist -->
+                <div class="checklist">
+                    <h3>Documents to Prepare</h3>
+                    <div class="checklist-item">Student ID or Roll Number</div>
+                    <div class="checklist-item">Latest Marksheet (PDF or Image)</div>
+                    <div class="checklist-item">Income Proof Document</div>
+                    <div class="checklist-item">Any Additional Supporting Documents</div>
+                </div>
+
+                <!-- Support -->
+                <div class="support-section">
+                    <h3>Need Help?</h3>
+                    <p>Have questions about the submission process?</p>
+                    <p>
+                        <a href="mailto:oorunifoundation@gmail.com" class="support-link">
+                            Email us: oorunifoundation@gmail.com
+                        </a>
+                    </p>
+                </div>
+
+                <div class="message" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e5ea; font-style: italic; color: #666666; font-size: 14px;">
+                    Keep your OES ID and password secure. Don't share them with anyone. If you didn't request this email or believe you received it by mistake, please contact us immediately.
                 </div>
             </div>
 
-            <!-- Portal Link -->
-            <div style="text-align: center;">
-                <a href="https://www.ooruni.com/oes/secondary" class="portal-button">
-                    📱 Open Portal & Submit Documents
-                </a>
+            <!-- Footer -->
+            <div class="footer">
+                <p>© 2026 Ooruni Foundation. All rights reserved.</p>
+                <p style="margin-top: 12px;">This is an automated message. Please do not reply directly to this email.</p>
+                <div class="footer-links">
+                    <a href="https://www.ooruni.com">Website</a>
+                    <a href="https://chat.whatsapp.com/FlS75nzpko8EXfPrPx0VWw">WhatsApp Community</a>
+                </div>
             </div>
-
-            <!-- Timeline -->
-            <div class="timeline-box">
-                <p><strong>⏰ Portal Opens TODAY at 12:00 PM (Noon IST)</strong></p>
-                <p style="margin-top: 8px;">Submission Deadline: <strong>31st July 2026, 11:59 PM</strong></p>
-            </div>
-
-            <!-- Information Section -->
-            <div class="info-section">
-                <h4>📄 What You Need to Prepare:</h4>
-                <ul class="info-list">
-                    <li>Student ID / Roll Number</li>
-                    <li>Latest Marksheet (PDF/Image)</li>
-                    <li>Income Proof Document</li>
-                    <li>Supporting Documents (if applicable)</li>
-                </ul>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- WhatsApp Community -->
-            <div class="whatsapp-box">
-                <h4>💬 Join Our Community</h4>
-                <p style="font-size: 14px; color: #2e7d32; margin-bottom: 12px;">
-                    Get real-time updates and support from our team
-                </p>
-                <a href="https://chat.whatsapp.com/FlS75nzpko8EXfPrPx0VWw" class="whatsapp-link">
-                    📱 Join WhatsApp Group
-                </a>
-            </div>
-
-            <!-- Support Section -->
-            <div class="support-section">
-                <h4>❓ Need Help?</h4>
-                <p>
-                    Email: <a href="mailto:oorunifoundation@gmail.com">oorunifoundation@gmail.com</a>
-                </p>
-                <p style="margin-top: 8px; font-size: 13px;">
-                    Reply to this email or message us on WhatsApp. We're here to help!
-                </p>
-            </div>
-
-            <!-- Tips -->
-            <div class="info-section" style="background: #f9f9f9; padding: 15px; border-radius: 6px;">
-                <h4 style="margin-bottom: 8px;">💡 Pro Tips:</h4>
-                <ul class="info-list" style="font-size: 13px;">
-                    <li>Keep your password safe and don't share it</li>
-                    <li>Upload high-quality scans/photos of documents</li>
-                    <li>Complete submission at least 24 hours before deadline</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>© 2026 Ooruni Foundation. All rights reserved.</p>
-            <p>This is an automated message. Please do not reply to this email.</p>
-            <p style="margin-top: 10px; font-size: 11px; color: #bbb;">
-                If you believe you received this email by mistake, please contact us immediately.
-            </p>
         </div>
     </div>
 </body>

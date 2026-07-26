@@ -373,6 +373,14 @@ export function SecondaryPortalClient({
                 </Button>
               ))}
             </div>
+            <a
+              href="/forms/income-declaration-form.pdf"
+              download
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              <Download className="h-3 w-3" />
+              No payslip? Download the income declaration format
+            </a>
           </div>
 
           {isSingleParent && (

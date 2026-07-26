@@ -1,6 +1,11 @@
 import "server-only"
 import { createAdminClient } from "@/lib/supabase/admin"
-import type { AppStatus } from "@/lib/constants"
+import {
+  SECONDARY_DOCUMENT_BASE_MANDATORY,
+  SECONDARY_DOCUMENT_LABELS,
+  type AppStatus,
+  type SecondaryDocumentType,
+} from "@/lib/constants"
 
 // Reads use the service-role client; the dashboard layout already authorizes
 // the caller (requireStaff). Mutations separately enforce canManage.
@@ -301,4 +306,146 @@ export async function getUsers() {
     .select("*")
     .order("created_at", { ascending: false })
   return data ?? []
+}
+
+// --- Secondary submission overview (admin) ----------------------------------
+// Two lean, targeted queries instead of one heavy nested join: the applicant
+// list only needs a handful of scalar columns, and document coverage only
+// needs (application_id, document_type) — never file paths/blobs — so the
+// whole page costs two small reads regardless of how many documents exist.
+
+export type SecondarySubmissionRow = {
+  id: string
+  reference_number: string
+  applicant_name: string
+  district: string | null
+  secondary_submitted_at: string | null
+  coreDocsUploaded: number
+  coreDocsTotal: number
+}
+
+export type SecondaryOverview = {
+  totalShortlisted: number
+  submitted: number
+  inProgress: number
+  notStarted: number
+  submissionRate: number
+  daysLeft: number
+  trend: { date: string; count: number }[]
+  documentCoverage: { type: string; label: string; count: number }[]
+  rows: SecondarySubmissionRow[]
+}
+
+const SECONDARY_SUBMISSION_DEADLINE = new Date("2026-07-31T23:59:59+05:30")
+
+// Docs that are mandatory for every applicant regardless of their conditional
+// answers (first-graduate cert, single-parent proof, etc. depend on answers
+// only known per-applicant, which would need a third query/join to evaluate
+// exactly — core-doc coverage is a cheap, still-meaningful proxy for it).
+const CORE_SECONDARY_DOCS = (
+  Object.entries(SECONDARY_DOCUMENT_BASE_MANDATORY) as [SecondaryDocumentType, boolean][]
+)
+  .filter(([, mandatory]) => mandatory)
+  .map(([type]) => type)
+
+type SecondaryAppEmbedded = {
+  id: string
+  reference_number: string
+  applicant_name: string
+  secondary_submitted_at: string | null
+  oes_personal_details: { district: string | null }[]
+}
+
+export async function getSecondaryOverview(): Promise<SecondaryOverview> {
+  const admin = createAdminClient()
+
+  const [{ data: apps, error: appsError }, { data: docs, error: docsError }] = await Promise.all([
+    admin
+      .from("oes_applications")
+      .select(
+        "id, reference_number, applicant_name, secondary_submitted_at, oes_personal_details(district)"
+      )
+      .eq("shortlisted", true)
+      .is("deleted_at", null)
+      .order("secondary_submitted_at", { ascending: false, nullsFirst: false }),
+    // Path prefix scopes this to secondary-portal uploads specifically —
+    // 'aadhaar' and 'scholarship' document_type values are shared with the
+    // primary application flow, so document_type alone can't distinguish them.
+    admin
+      .from("oes_documents")
+      .select("application_id, document_type")
+      .is("deleted_at", null)
+      .like("path", "applications/%/secondary/%"),
+  ])
+
+  if (appsError) console.error("getSecondaryOverview apps", appsError)
+  if (docsError) console.error("getSecondaryOverview docs", docsError)
+
+  const appRows = (apps ?? []) as unknown as SecondaryAppEmbedded[]
+  const docRows = (docs ?? []) as { application_id: string; document_type: string }[]
+
+  const uploadedTypesByApp = new Map<string, Set<string>>()
+  const typeTally = new Map<string, number>()
+  for (const d of docRows) {
+    if (!uploadedTypesByApp.has(d.application_id)) {
+      uploadedTypesByApp.set(d.application_id, new Set())
+    }
+    uploadedTypesByApp.get(d.application_id)!.add(d.document_type)
+    typeTally.set(d.document_type, (typeTally.get(d.document_type) ?? 0) + 1)
+  }
+
+  const rows: SecondarySubmissionRow[] = appRows.map((a) => {
+    const uploadedTypes = uploadedTypesByApp.get(a.id) ?? new Set<string>()
+    return {
+      id: a.id,
+      reference_number: a.reference_number,
+      applicant_name: a.applicant_name,
+      district: a.oes_personal_details?.[0]?.district ?? null,
+      secondary_submitted_at: a.secondary_submitted_at,
+      coreDocsUploaded: CORE_SECONDARY_DOCS.filter((t) => uploadedTypes.has(t)).length,
+      coreDocsTotal: CORE_SECONDARY_DOCS.length,
+    }
+  })
+
+  const submitted = rows.filter((r) => r.secondary_submitted_at).length
+  const inProgress = rows.filter((r) => !r.secondary_submitted_at && r.coreDocsUploaded > 0).length
+  const notStarted = rows.length - submitted - inProgress
+  const submissionRate = rows.length ? Math.round((submitted / rows.length) * 1000) / 10 : 0
+
+  const trendMap = new Map<string, number>()
+  for (const r of rows) {
+    if (!r.secondary_submitted_at) continue
+    const day = new Date(r.secondary_submitted_at).toLocaleDateString("en-CA", {
+      timeZone: "Asia/Kolkata",
+    })
+    trendMap.set(day, (trendMap.get(day) ?? 0) + 1)
+  }
+  const trend = [...trendMap.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([date, count]) => ({ date, count }))
+
+  const documentCoverage = [...typeTally.entries()]
+    .map(([type, count]) => ({
+      type,
+      label: SECONDARY_DOCUMENT_LABELS[type as SecondaryDocumentType] ?? type,
+      count,
+    }))
+    .sort((a, b) => b.count - a.count)
+
+  const daysLeft = Math.max(
+    0,
+    Math.ceil((SECONDARY_SUBMISSION_DEADLINE.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  )
+
+  return {
+    totalShortlisted: rows.length,
+    submitted,
+    inProgress,
+    notStarted,
+    submissionRate,
+    daysLeft,
+    trend,
+    documentCoverage,
+    rows,
+  }
 }

@@ -339,6 +339,8 @@ const en: Dict = {
   "detail.noDocuments": "No documents uploaded.",
   "detail.statusUpdated": "Status updated",
   "detail.remarkAdded": "Remark added",
+  "detail.downloadZip": "Download All (ZIP)",
+  "detail.zipReady": "ZIP export ready",
 
   // Reports
   "reports.title": "Reports",
@@ -805,6 +807,8 @@ const ta: Dict = {
   "detail.noDocuments": "ஆவணங்கள் எதுவும் பதிவேற்றப்படவில்லை.",
   "detail.statusUpdated": "நிலை புதுப்பிக்கப்பட்டது",
   "detail.remarkAdded": "குறிப்பு சேர்க்கப்பட்டது",
+  "detail.downloadZip": "அனைத்தையும் பதிவிறக்கு (ZIP)",
+  "detail.zipReady": "ZIP ஏற்றுமதி தயார்",
 
   "reports.title": "அறிக்கைகள்",
   "reports.subtitle": "தொகுக்கப்பட்ட அறிக்கைகளை உருவாக்கி ஏற்றுமதி செய்யவும்.",

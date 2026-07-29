@@ -179,3 +179,42 @@ export async function getDocumentSignedUrl(
   if (error || !data) return { error: "server" }
   return { url: data.signedUrl }
 }
+
+/** Batch signed URLs for a full-record ZIP export. One round trip instead of one per file. */
+export async function getDocumentSignedUrls(
+  files: { bucket: string; path: string }[]
+): Promise<{ url: string | null }[]> {
+  const user = await getSessionUser()
+  if (!user?.profile) return files.map(() => ({ url: null }))
+  const admin = createAdminClient()
+
+  const byBucket = new Map<string, string[]>()
+  for (const f of files) {
+    if (!byBucket.has(f.bucket)) byBucket.set(f.bucket, [])
+    byBucket.get(f.bucket)!.push(f.path)
+  }
+
+  const urlsByBucketAndPath = new Map<string, string>()
+  for (const [bucket, paths] of byBucket) {
+    const { data } = await admin.storage.from(bucket).createSignedUrls(paths, 60 * 10)
+    for (const d of data ?? []) {
+      if (d.signedUrl && d.path) urlsByBucketAndPath.set(`${bucket}:${d.path}`, d.signedUrl)
+    }
+  }
+
+  return files.map((f) => ({ url: urlsByBucketAndPath.get(`${f.bucket}:${f.path}`) ?? null }))
+}
+
+/** Audit trail for bulk data exports — a ZIP contains every document + full PII, worth logging distinctly from single-document views. */
+export async function logZipExport(applicationId: string, referenceNumber: string, fileCount: number) {
+  const user = await getSessionUser()
+  if (!user?.profile) return
+  await writeAudit({
+    action: "application.zip_export",
+    entity: "application",
+    entityId: applicationId,
+    details: { reference: referenceNumber, fileCount },
+    actorId: user.id,
+    actorEmail: user.email,
+  })
+}

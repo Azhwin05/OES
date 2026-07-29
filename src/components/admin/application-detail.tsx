@@ -12,6 +12,7 @@ import {
   Printer,
   Download,
   FileDown,
+  FileArchive,
   MessageSquarePlus,
   Loader2,
 } from "lucide-react"
@@ -19,6 +20,7 @@ import Link from "next/link"
 import { toast } from "sonner"
 import { jsPDF } from "jspdf"
 import autoTable from "jspdf-autotable"
+import JSZip from "jszip"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
@@ -32,7 +34,15 @@ import {
 } from "@/components/ui/dialog"
 import { StatusBadge } from "@/components/status-badge"
 import { useT } from "@/lib/i18n/context"
-import { updateStatus, addRemark, softDeleteApplications, getDocumentSignedUrl } from "@/app/oes/admin/actions"
+import {
+  updateStatus,
+  addRemark,
+  softDeleteApplications,
+  getDocumentSignedUrl,
+  getDocumentSignedUrls,
+  logZipExport,
+} from "@/app/oes/admin/actions"
+import { triggerDownload } from "@/lib/export"
 import type { AppStatus } from "@/lib/constants"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -50,6 +60,7 @@ export function ApplicationDetail({
   const [remark, setRemark] = useState("")
   const [busy, setBusy] = useState(false)
   const [confirmDel, setConfirmDel] = useState(false)
+  const [zipBusy, setZipBusy] = useState(false)
 
   const p = app.oes_personal_details?.[0] ?? {}
   const e = app.oes_education_details?.[0] ?? {}
@@ -104,7 +115,7 @@ export function ApplicationDetail({
     else toast.error(t("err.server"))
   }
 
-  function downloadPdf() {
+  function buildSummaryPdf() {
     const doc = new jsPDF({ unit: "pt", format: "a4" })
     doc.setFontSize(16); doc.setTextColor(30, 58, 138)
     doc.text(`OES Application — ${app.reference_number}`, 40, 44)
@@ -123,7 +134,66 @@ export function ApplicationDetail({
     y = section("Education", [["School", sv(e.school_name)], ["Institution", sv(e.institution_name)], ["Course", sv(e.course_name)], ["Year", sv(e.current_year)]], y)
     y = section("Family", [["Father", sv(f.father_name)], ["Mother", sv(f.mother_name)], ["Guardian", sv(f.guardian_name)], ["Income", sv(f.annual_income)]], y)
     y = section("Residence", [["Type", sv(re.residence_type)], ["Address", sv(re.door_street)], ["District", sv(re.district)]], y)
-    doc.save(`OES-${app.reference_number}.pdf`)
+    if (documents.length > 0) {
+      section(
+        "Documents",
+        documents.map((d: any) => [t(`f.doc.${docKey(d.document_type)}`), sv(d.file_name)]),
+        y
+      )
+    }
+    return doc
+  }
+
+  function downloadPdf() {
+    buildSummaryPdf().save(`OES-${app.reference_number}.pdf`)
+  }
+
+  async function downloadZip() {
+    setZipBusy(true)
+    try {
+      const zip = new JSZip()
+      zip.file(`${app.reference_number}-Summary.pdf`, buildSummaryPdf().output("blob"))
+
+      if (documents.length > 0) {
+        const signed = await getDocumentSignedUrls(
+          documents.map((d: any) => ({ bucket: d.bucket, path: d.path }))
+        )
+        const folder = zip.folder("Documents")!
+        const usedNames = new Set<string>()
+        let failures = 0
+
+        await Promise.all(
+          documents.map(async (d: any, i: number) => {
+            const url = signed[i]?.url
+            if (!url) { failures++; return }
+            try {
+              const res = await fetch(url)
+              if (!res.ok) throw new Error(String(res.status))
+              const blob = await res.blob()
+              let name = `${docKey(d.document_type)}_${d.file_name || "file"}`
+              while (usedNames.has(name)) name = `${d.id.slice(0, 8)}_${name}`
+              usedNames.add(name)
+              folder.file(name, blob)
+            } catch {
+              failures++
+            }
+          })
+        )
+
+        if (failures > 0) {
+          toast.error(`${failures} of ${documents.length} document(s) could not be included.`)
+        }
+      }
+
+      const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" })
+      triggerDownload(blob, `OES-${app.reference_number}-full-export.zip`)
+      await logZipExport(app.id, app.reference_number, documents.length)
+      toast.success(t("detail.zipReady"))
+    } catch {
+      toast.error(t("err.server"))
+    } finally {
+      setZipBusy(false)
+    }
   }
 
   return (
@@ -142,6 +212,14 @@ export function ApplicationDetail({
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={downloadPdf}>
             <Download className="mr-1 h-4 w-4" /> PDF
+          </Button>
+          <Button variant="outline" size="sm" onClick={downloadZip} disabled={zipBusy}>
+            {zipBusy ? (
+              <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            ) : (
+              <FileArchive className="mr-1 h-4 w-4" />
+            )}
+            {t("detail.downloadZip")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="mr-1 h-4 w-4" /> {t("common.print")}

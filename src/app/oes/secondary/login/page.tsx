@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { LogIn, KeyRound } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { secondaryLogin } from "./actions"
 
 export default function SecondaryLoginPage() {
+  return (
+    <Suspense>
+      <SecondaryLoginForm />
+    </Suspense>
+  )
+}
+
+function SecondaryLoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const next = searchParams.get("next")
   const [reference, setReference] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -32,7 +42,7 @@ export default function SecondaryLoginPage() {
         )
         return
       }
-      router.push("/oes/secondary/portal")
+      router.push(next && next.startsWith("/oes/") ? next : "/oes/secondary/portal")
       router.refresh()
     } catch {
       setError("Something went wrong. Please try again.")

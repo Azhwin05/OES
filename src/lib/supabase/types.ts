@@ -10,6 +10,7 @@ import type {
   UserRole,
   DocumentType,
   SecondaryDocumentType,
+  TertiaryDocumentType,
 } from "@/lib/constants"
 
 type Timestamps = {
@@ -38,6 +39,7 @@ export type ApplicationRow = {
   shortlisted: boolean
   secondary_submitted_at: string | null
   secondary_password_hash: string | null
+  tertiary_submitted_at: string | null
 } & Timestamps
 
 export type PersonalRow = {
@@ -120,7 +122,7 @@ export type ResidenceRow = {
 export type DocumentRow = {
   id: string
   application_id: string
-  document_type: DocumentType | SecondaryDocumentType
+  document_type: DocumentType | SecondaryDocumentType | TertiaryDocumentType
   bucket: string
   path: string
   file_name: string | null
@@ -180,6 +182,12 @@ export type SecondaryAnswersRow = {
   single_parent_reason: string | null
 } & Timestamps
 
+export type TertiaryAnswersRow = {
+  application_id: string
+  mode_of_payment: string | null
+  last_payment_date: string | null
+} & Timestamps
+
 type TableDef<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
   Row: Row
   Insert: Insert
@@ -205,6 +213,7 @@ export type Database = {
       oes_secondary_settings: TableDef<SecondarySettingsRow>
       oes_applicant_sessions: TableDef<ApplicantSessionRow>
       oes_secondary_answers: TableDef<SecondaryAnswersRow>
+      oes_tertiary_answers: TableDef<TertiaryAnswersRow>
     }
     Views: Record<string, never>
     Functions: {

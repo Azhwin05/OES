@@ -165,6 +165,47 @@ export function computeSecondaryMandatory(
   return mandatory
 }
 
+// --- Tertiary data collection (academic progress / fee payment proof) ------
+// For already-shortlisted candidates whose scholarship has been disbursed by
+// Ooruni; they confirm the institution received it and submit proof.
+export const TERTIARY_DOCUMENT_TYPES = [
+  "bonafide_certificate",
+  "fee_structure",
+  "semester_marksheet",
+  "payment_proof",
+  "achievement_certificate",
+] as const
+export type TertiaryDocumentType = (typeof TERTIARY_DOCUMENT_TYPES)[number]
+
+export const TERTIARY_DOCUMENT_MANDATORY: Record<TertiaryDocumentType, boolean> = {
+  bonafide_certificate: true,
+  fee_structure: true,
+  semester_marksheet: false, // only applicable to 2nd/3rd year students with completed semesters
+  payment_proof: true,
+  achievement_certificate: false, // optional, "if any"
+}
+
+export const TERTIARY_DOCUMENT_LABELS: Record<TertiaryDocumentType, string> = {
+  bonafide_certificate: "Bonafide Certificate from the Institution",
+  fee_structure: "Fee Structure",
+  semester_marksheet: "Semester Mark Sheet (for completed semesters)",
+  payment_proof: "Proof of Payment Received (screenshot of message/mail from the institution)",
+  achievement_certificate: "Achievements / Ranks / Sports Credentials (if any)",
+}
+
+export const PAYMENT_MODES = ["neft", "cheque", "portal"] as const
+export type PaymentMode = (typeof PAYMENT_MODES)[number]
+export const PAYMENT_MODE_LABELS: Record<PaymentMode, string> = {
+  neft: "NEFT",
+  cheque: "Cheque",
+  portal: "Portal",
+}
+
+export type TertiaryAnswers = {
+  modeOfPayment: PaymentMode | null
+  lastPaymentDate: string | null
+}
+
 // Visual config for statuses (Tailwind classes + i18n key).
 export const STATUS_CONFIG: Record<
   AppStatus,

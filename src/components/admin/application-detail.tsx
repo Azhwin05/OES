@@ -130,10 +130,66 @@ export function ApplicationDetail({
     }
     const sv = (v: any) => (v === null || v === undefined || v === "" ? "-" : String(v))
     let y = 64
-    y = section("Personal", [["Name", sv(p.full_name)], ["Phone", sv(p.contact_number)], ["Email", sv(p.email)], ["District", sv(p.district)], ["PIN", sv(p.pincode)]], y)
-    y = section("Education", [["School", sv(e.school_name)], ["Institution", sv(e.institution_name)], ["Course", sv(e.course_name)], ["Year", sv(e.current_year)], ["Institution Contact", sv(e.institution_contact_name)], ["Contact Mobile", sv(e.institution_contact_mobile)]], y)
-    y = section("Family", [["Father", sv(f.father_name)], ["Mother", sv(f.mother_name)], ["Guardian", sv(f.guardian_name)], ["Income", sv(f.annual_income)]], y)
-    y = section("Residence", [["Type", sv(re.residence_type)], ["Address", sv(re.door_street)], ["District", sv(re.district)]], y)
+    y = section("Personal", [
+      ["Full Name", sv(p.full_name)],
+      ["Contact Number", sv(p.contact_number)],
+      ["Alt Contact Number", sv(p.alt_contact_number)],
+      ["Email", sv(p.email)],
+      ["Date of Birth", sv(p.dob)],
+      ["Gender", sv(p.gender)],
+      ["Town", sv(p.town)],
+      ["District", sv(p.district)],
+      ["State", sv(p.state)],
+      ["PIN Code", sv(p.pincode)],
+    ], y)
+    y = section("Education", [
+      ["School Name", sv(e.school_name)],
+      ["School Type", sv(e.school_type)],
+      ["Institution Name", sv(e.institution_name)],
+      ["Institution Type", sv(e.institution_type)],
+      ["Course Name", sv(e.course_name)],
+      ["Course Duration", sv(e.course_duration)],
+      ["Current Year", sv(e.current_year)],
+      ["Current Semester", sv(e.current_semester)],
+      ["Scholarship Details", sv(e.scholarship_details)],
+      ["Institution Contact Name", sv(e.institution_contact_name)],
+      ["Institution Contact Mobile", sv(e.institution_contact_mobile)],
+    ], y)
+    y = section("Family", [
+      ["Parent Status", sv(f.parent_status)],
+      ["Single Parent Reason", sv(f.single_parent_reason)],
+      ["Father Name", sv(f.father_name)],
+      ["Mother Name", sv(f.mother_name)],
+      ["Guardian Name", sv(f.guardian_name)],
+      ["Guardian Contact", sv(f.guardian_contact)],
+      ["Guardian Occupation", sv(f.guardian_occupation)],
+      ["Annual Income", sv(f.annual_income)],
+    ], y)
+    y = section(
+      "Siblings",
+      siblings.length > 0
+        ? siblings.map((s: any, i: number) => [
+            `Sibling ${i + 1}`,
+            sv([s.name, s.birth_order, s.occupation, s.details].filter(Boolean).join(" · ")),
+          ])
+        : [["Siblings", "-"]],
+      y
+    )
+    y = section("Impairment", [
+      ["Has Impairment", im.has_impairment ? "Yes" : "No"],
+      ["Belongs To", sv(im.belongs_to)],
+      ["Impairment Type", sv(im.impairment_type)],
+      ["Description", sv(im.description)],
+    ], y)
+    y = section("Residence", [
+      ["Residence Type", sv(re.residence_type)],
+      ["Roof Type", sv(re.roof_type)],
+      ["Ownership Source", sv(re.ownership_source)],
+      ["Door / Street", sv(re.door_street)],
+      ["Town", sv(re.town)],
+      ["District", sv(re.district)],
+      ["PIN Code", sv(re.pincode)],
+    ], y)
     if (documents.length > 0) {
       section(
         "Documents",

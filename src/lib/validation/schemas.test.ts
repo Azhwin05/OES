@@ -61,6 +61,8 @@ describe("educationSchema", () => {
     course_name: "B.Sc",
     course_duration: 3,
     current_year: 2,
+    institution_contact_name: "Dr. Ramesh",
+    institution_contact_mobile: "9876543210",
   }
 
   it("accepts valid education", () => {
@@ -69,6 +71,21 @@ describe("educationSchema", () => {
 
   it("rejects current year exceeding course duration", () => {
     const r = educationSchema.safeParse({ ...base, current_year: 4 })
+    expect(r.success).toBe(false)
+  })
+
+  it("requires an institution contact name", () => {
+    const r = educationSchema.safeParse({ ...base, institution_contact_name: "" })
+    expect(r.success).toBe(false)
+  })
+
+  it("requires an institution contact mobile number", () => {
+    const r = educationSchema.safeParse({ ...base, institution_contact_mobile: "" })
+    expect(r.success).toBe(false)
+  })
+
+  it("rejects an invalid institution contact mobile number", () => {
+    const r = educationSchema.safeParse({ ...base, institution_contact_mobile: "12345" })
     expect(r.success).toBe(false)
   })
 })
@@ -154,6 +171,8 @@ describe("fullApplicationSchema", () => {
       course_name: "C",
       course_duration: 4,
       current_year: 1,
+      institution_contact_name: "Dr. Ramesh",
+      institution_contact_mobile: "9876543210",
     },
     family: { parent_status: "both" },
     siblings: { number_of_siblings: 0, siblings: [] },

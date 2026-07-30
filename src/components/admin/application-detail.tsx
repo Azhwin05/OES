@@ -131,7 +131,7 @@ export function ApplicationDetail({
     const sv = (v: any) => (v === null || v === undefined || v === "" ? "-" : String(v))
     let y = 64
     y = section("Personal", [["Name", sv(p.full_name)], ["Phone", sv(p.contact_number)], ["Email", sv(p.email)], ["District", sv(p.district)], ["PIN", sv(p.pincode)]], y)
-    y = section("Education", [["School", sv(e.school_name)], ["Institution", sv(e.institution_name)], ["Course", sv(e.course_name)], ["Year", sv(e.current_year)]], y)
+    y = section("Education", [["School", sv(e.school_name)], ["Institution", sv(e.institution_name)], ["Course", sv(e.course_name)], ["Year", sv(e.current_year)], ["Institution Contact", sv(e.institution_contact_name)], ["Contact Mobile", sv(e.institution_contact_mobile)]], y)
     y = section("Family", [["Father", sv(f.father_name)], ["Mother", sv(f.mother_name)], ["Guardian", sv(f.guardian_name)], ["Income", sv(f.annual_income)]], y)
     y = section("Residence", [["Type", sv(re.residence_type)], ["Address", sv(re.door_street)], ["District", sv(re.district)]], y)
     if (documents.length > 0) {
@@ -279,6 +279,8 @@ export function ApplicationDetail({
             <Field label={t("f.currentYear")} value={e.current_year} />
             <Field label={t("f.currentSemester")} value={e.current_semester} />
             <Field label={t("f.scholarshipDetails")} value={e.scholarship_details} />
+            <Field label={t("f.institutionContactName")} value={e.institution_contact_name} />
+            <Field label={t("f.institutionContactMobile")} value={e.institution_contact_mobile} />
           </Section>
 
           <Section title={t("detail.family")}>

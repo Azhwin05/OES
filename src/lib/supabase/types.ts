@@ -69,6 +69,8 @@ export type EducationRow = {
   current_semester: number | null
   scholarship_details: string | null
   has_scholarship: boolean
+  institution_contact_name: string | null
+  institution_contact_mobile: string | null
 } & Timestamps
 
 export type FamilyRow = {

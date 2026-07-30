@@ -53,6 +53,8 @@ export function ReviewStep({ form, onEditStep }: Props) {
         {row(t("f.courseDuration"), v.education?.course_duration)}
         {row(t("f.currentYear"), v.education?.current_year)}
         {row(t("f.scholarshipDetails"), v.education?.scholarship_details)}
+        {row(t("f.institutionContactName"), v.education?.institution_contact_name)}
+        {row(t("f.institutionContactMobile"), v.education?.institution_contact_mobile)}
       </Section>
 
       <Section title={t("detail.family")} onEdit={() => onEditStep(2)}>

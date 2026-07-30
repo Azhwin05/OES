@@ -80,6 +80,14 @@ export function EducationStep({ form }: StepProps) {
       <div className="sm:col-span-2">
         <TextAreaField control={c} name="education.scholarship_details" label={t("f.scholarshipDetails")} placeholder={t("common.optional")} />
       </div>
+
+      <div className="sm:col-span-2">
+        <Separator className="mb-5" />
+        <h4 className="mb-1 text-sm font-semibold">{t("f.institutionContactSection")}</h4>
+        <p className="text-muted-foreground mb-4 text-xs">{t("f.institutionContactHint")}</p>
+      </div>
+      <TextField control={c} name="education.institution_contact_name" label={t("f.institutionContactName")} required />
+      <TextField control={c} name="education.institution_contact_mobile" label={t("f.institutionContactMobile")} required inputMode="tel" placeholder="9876543210" />
     </div>
   )
 }

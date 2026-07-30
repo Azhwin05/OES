@@ -134,6 +134,10 @@ const en: Dict = {
   "f.currentYear": "Current Year of Study",
   "f.currentSemester": "Current Semester",
   "f.scholarshipDetails": "Scholarship Details (if any)",
+  "f.institutionContactSection": "Institution Contact Person (HOD / Lecturer / Faculty) — Mandatory",
+  "f.institutionContactHint": "Contact person at the institution (HOD / Lecturer / Faculty).",
+  "f.institutionContactName": "Name of the Contact Person",
+  "f.institutionContactMobile": "Mobile Number",
   "f.government": "Government",
   "f.private": "Private",
 
@@ -617,6 +621,10 @@ const ta: Dict = {
   "f.currentYear": "தற்போது படிக்கும் ஆண்டு",
   "f.currentSemester": "தற்போதைய பருவம்",
   "f.scholarshipDetails": "உதவித்தொகை விவரங்கள் (ஏதேனும் இருந்தால்)",
+  "f.institutionContactSection": "நிறுவனத் தொடர்பு நபர் (HOD / விரிவுரையாளர் / பேராசிரியர்) — கட்டாயம்",
+  "f.institutionContactHint": "நிறுவனத்தில் உள்ள தொடர்பு நபர் (HOD / விரிவுரையாளர் / பேராசிரியர்).",
+  "f.institutionContactName": "தொடர்பு நபரின் பெயர்",
+  "f.institutionContactMobile": "கைபேசி எண்",
   "f.government": "அரசு",
   "f.private": "தனியார்",
 

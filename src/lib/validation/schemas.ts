@@ -60,6 +60,9 @@ export const educationSchema = z
     current_semester: z.coerce.number().int().min(0).max(20).optional(),
     scholarship_details: z.string().optional().or(z.literal("")),
     has_scholarship: z.boolean().default(false),
+    // Institution Contact Person (HOD / Lecturer / Faculty) — mandatory.
+    institution_contact_name: requiredText,
+    institution_contact_mobile: phone,
   })
   .refine((d) => d.current_year <= d.course_duration, {
     message: "err.yearExceedsDuration",

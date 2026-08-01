@@ -336,7 +336,7 @@ export type SecondaryOverview = {
   rows: SecondarySubmissionRow[]
 }
 
-const SECONDARY_SUBMISSION_DEADLINE = new Date("2026-07-31T23:59:59+05:30")
+const SECONDARY_SUBMISSION_DEADLINE = new Date("2026-08-05T23:59:59+05:30")
 
 // Docs that are mandatory for every applicant regardless of their conditional
 // answers (first-graduate cert, single-parent proof, etc. depend on answers

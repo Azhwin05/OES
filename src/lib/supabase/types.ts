@@ -186,6 +186,9 @@ export type TertiaryAnswersRow = {
   application_id: string
   mode_of_payment: string | null
   last_payment_date: string | null
+  contact_person_name: string | null
+  contact_person_designation: string | null
+  contact_person_mobile: string | null
 } & Timestamps
 
 type TableDef<Row, Insert = Partial<Row>, Update = Partial<Row>> = {

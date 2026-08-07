@@ -18,6 +18,8 @@ export type TertiaryDocUpload = {
   size_bytes: number | null
 }
 
+const PHONE_REGEX = /^[6-9]\d{9}$/
+
 export type SubmitTertiaryResult =
   | { ok: true }
   | { ok: false; error: string; missing?: TertiaryDocumentType[] }
@@ -31,6 +33,11 @@ export async function submitTertiaryDocuments(
 
   if (!answers.modeOfPayment) return { ok: false, error: "missing_mode_of_payment" }
   if (!answers.lastPaymentDate) return { ok: false, error: "missing_payment_date" }
+  if (!answers.contactPersonName?.trim()) return { ok: false, error: "missing_contact_name" }
+  if (!answers.contactPersonDesignation) return { ok: false, error: "missing_contact_designation" }
+  if (!answers.contactPersonMobile || !PHONE_REGEX.test(answers.contactPersonMobile)) {
+    return { ok: false, error: "invalid_contact_mobile" }
+  }
 
   const admin = createAdminClient()
 
@@ -58,6 +65,9 @@ export async function submitTertiaryDocuments(
     application_id: applicant.applicationId,
     mode_of_payment: answers.modeOfPayment,
     last_payment_date: answers.lastPaymentDate,
+    contact_person_name: answers.contactPersonName.trim(),
+    contact_person_designation: answers.contactPersonDesignation,
+    contact_person_mobile: answers.contactPersonMobile,
     updated_at: new Date().toISOString(),
   })
 

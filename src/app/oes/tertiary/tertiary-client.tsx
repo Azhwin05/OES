@@ -22,10 +22,13 @@ import {
   TERTIARY_DOCUMENT_LABELS,
   PAYMENT_MODES,
   PAYMENT_MODE_LABELS,
+  INSTITUTION_CONTACT_DESIGNATIONS,
+  INSTITUTION_CONTACT_DESIGNATION_LABELS,
   DOCS_BUCKET,
   type TertiaryDocumentType,
   type TertiaryAnswers,
   type PaymentMode,
+  type InstitutionContactDesignation,
 } from "@/lib/constants"
 import { submitTertiaryDocuments, tertiaryLogout, type TertiaryDocUpload } from "./actions"
 
@@ -52,7 +55,13 @@ type Props = {
     tertiary_submitted_at: string | null
   }
   existingDocs: { document_type: string; file_name: string | null; created_at: string }[]
-  existingAnswers: { mode_of_payment: string | null; last_payment_date: string | null } | null
+  existingAnswers: {
+    mode_of_payment: string | null
+    last_payment_date: string | null
+    contact_person_name: string | null
+    contact_person_designation: string | null
+    contact_person_mobile: string | null
+  } | null
 }
 
 type UploadState = {
@@ -69,6 +78,16 @@ export function TertiaryPortalClient({ application, existingDocs, existingAnswer
   )
   const [lastPaymentDate, setLastPaymentDate] = useState<string>(
     existingAnswers?.last_payment_date ?? ""
+  )
+  const [contactPersonName, setContactPersonName] = useState<string>(
+    existingAnswers?.contact_person_name ?? ""
+  )
+  const [contactPersonDesignation, setContactPersonDesignation] =
+    useState<InstitutionContactDesignation | null>(
+      (existingAnswers?.contact_person_designation as InstitutionContactDesignation | null) ?? null
+    )
+  const [contactPersonMobile, setContactPersonMobile] = useState<string>(
+    existingAnswers?.contact_person_mobile ?? ""
   )
 
   const [uploads, setUploads] = useState<Record<string, UploadState>>({})
@@ -122,12 +141,30 @@ export function TertiaryPortalClient({ application, existingDocs, existingAnswer
         setError("Please enter the last date of payment.")
         return
       }
+      if (!contactPersonName.trim()) {
+        setError("Please enter the name of the institution contact person.")
+        return
+      }
+      if (!contactPersonDesignation) {
+        setError("Please select the designation of the institution contact person.")
+        return
+      }
+      if (!/^[6-9]\d{9}$/.test(contactPersonMobile)) {
+        setError("Please enter a valid 10-digit mobile number for the institution contact person.")
+        return
+      }
       const stillUploading = Object.values(uploads).some((u) => u.status === "uploading")
       if (stillUploading) {
         setError("Please wait for all uploads to finish before submitting.")
         return
       }
-      const answers: TertiaryAnswers = { modeOfPayment, lastPaymentDate }
+      const answers: TertiaryAnswers = {
+        modeOfPayment,
+        lastPaymentDate,
+        contactPersonName,
+        contactPersonDesignation,
+        contactPersonMobile,
+      }
       const docs = Object.values(uploads)
         .filter((u): u is UploadState & { doc: TertiaryDocUpload } => !!u.doc)
         .map((u) => u.doc)
@@ -140,7 +177,13 @@ export function TertiaryPortalClient({ application, existingDocs, existingAnswer
               ? "Please select the mode of payment."
               : result.error === "missing_payment_date"
                 ? "Please enter the last date of payment."
-                : "Something went wrong. Please try again."
+                : result.error === "missing_contact_name"
+                  ? "Please enter the name of the institution contact person."
+                  : result.error === "missing_contact_designation"
+                    ? "Please select the designation of the institution contact person."
+                    : result.error === "invalid_contact_mobile"
+                      ? "Please enter a valid 10-digit mobile number for the institution contact person."
+                      : "Something went wrong. Please try again."
         )
         setMissing(result.missing ?? [])
         return
@@ -188,6 +231,57 @@ export function TertiaryPortalClient({ application, existingDocs, existingAnswer
           Log out
         </Button>
       </div>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-base">Institution Contact Person</CardTitle>
+          <p className="text-muted-foreground text-xs">
+            Contact person at the institution (HOD / Lecturer / Faculty) — mandatory.
+          </p>
+        </CardHeader>
+        <CardContent className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="contact-person-name">Name of the Contact Person *</Label>
+            <Input
+              id="contact-person-name"
+              value={contactPersonName}
+              onChange={(e) => setContactPersonName(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label>Designation *</Label>
+            <Select
+              items={INSTITUTION_CONTACT_DESIGNATIONS.map((d) => ({
+                value: d,
+                label: INSTITUTION_CONTACT_DESIGNATION_LABELS[d],
+              }))}
+              value={contactPersonDesignation ?? null}
+              onValueChange={(v) => setContactPersonDesignation((v as InstitutionContactDesignation) ?? null)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {INSTITUTION_CONTACT_DESIGNATIONS.map((d) => (
+                  <SelectItem key={d} value={d}>
+                    {INSTITUTION_CONTACT_DESIGNATION_LABELS[d]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2 sm:col-span-2">
+            <Label htmlFor="contact-person-mobile">Mobile Number *</Label>
+            <Input
+              id="contact-person-mobile"
+              inputMode="tel"
+              placeholder="9876543210"
+              value={contactPersonMobile}
+              onChange={(e) => setContactPersonMobile(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="mb-6">
         <CardHeader>

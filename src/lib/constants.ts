@@ -189,7 +189,7 @@ export const TERTIARY_DOCUMENT_LABELS: Record<TertiaryDocumentType, string> = {
   bonafide_certificate: "Bonafide Certificate from the Institution",
   fee_structure: "Fee Structure",
   semester_marksheet: "Semester Mark Sheet (for completed semesters)",
-  payment_proof: "Proof of Payment Received (screenshot of message/mail from the institution)",
+  payment_proof: "Document confirming the last date of payment (can be SMS, email, or letter)",
   achievement_certificate: "Achievements / Ranks / Sports Credentials (if any)",
 }
 
@@ -201,9 +201,30 @@ export const PAYMENT_MODE_LABELS: Record<PaymentMode, string> = {
   portal: "Portal",
 }
 
+export const INSTITUTION_CONTACT_DESIGNATIONS = [
+  "hod",
+  "lecturer",
+  "assistant_professor",
+  "associate_professor",
+  "professor",
+  "other",
+] as const
+export type InstitutionContactDesignation = (typeof INSTITUTION_CONTACT_DESIGNATIONS)[number]
+export const INSTITUTION_CONTACT_DESIGNATION_LABELS: Record<InstitutionContactDesignation, string> = {
+  hod: "HOD",
+  lecturer: "Lecturer",
+  assistant_professor: "Assistant Professor",
+  associate_professor: "Associate Professor",
+  professor: "Professor",
+  other: "Other",
+}
+
 export type TertiaryAnswers = {
   modeOfPayment: PaymentMode | null
   lastPaymentDate: string | null
+  contactPersonName: string | null
+  contactPersonDesignation: InstitutionContactDesignation | null
+  contactPersonMobile: string | null
 }
 
 // Visual config for statuses (Tailwind classes + i18n key).

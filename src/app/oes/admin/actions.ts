@@ -2,9 +2,16 @@
 
 import { revalidatePath } from "next/cache"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { getSessionUser, canManage } from "@/lib/auth"
+import { getSessionUser, canManage, canReviewSecondary } from "@/lib/auth"
 import { writeAudit } from "@/lib/audit"
-import { APP_STATUSES, USER_ROLES, type AppStatus, type UserRole } from "@/lib/constants"
+import {
+  APP_STATUSES,
+  USER_ROLES,
+  SECONDARY_REVIEW_STATUSES,
+  type AppStatus,
+  type UserRole,
+  type SecondaryReviewStatus,
+} from "@/lib/constants"
 
 type ActionResult = { ok: boolean; error?: string }
 
@@ -217,4 +224,52 @@ export async function logZipExport(applicationId: string, referenceNumber: strin
     actorId: user.id,
     actorEmail: user.email,
   })
+}
+
+/**
+ * Records a reviewer's decision on a candidate's secondary document
+ * submission. Any staff role except viewer may call this (super_admin,
+ * admin, reviewer). "needs_correction" requires a note — the candidate's
+ * portal reopens for them, and they need to know what to fix.
+ */
+export async function setSecondaryReviewStatus(
+  applicationId: string,
+  decision: SecondaryReviewStatus,
+  note?: string
+): Promise<ActionResult> {
+  const user = await getSessionUser()
+  if (!canReviewSecondary(user)) return { ok: false, error: "unauthorized" }
+  if (!SECONDARY_REVIEW_STATUSES.includes(decision) || decision === "pending") {
+    return { ok: false, error: "invalid" }
+  }
+  const trimmedNote = note?.trim() || null
+  if (decision === "needs_correction" && !trimmedNote) {
+    return { ok: false, error: "note_required" }
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from("oes_applications")
+    .update({
+      secondary_review_status: decision,
+      secondary_review_note: trimmedNote,
+      secondary_reviewed_at: new Date().toISOString(),
+      secondary_reviewed_by: user!.id,
+    })
+    .eq("id", applicationId)
+
+  if (error) return { ok: false, error: "server" }
+
+  await writeAudit({
+    action: `secondary_review.${decision}`,
+    entity: "application",
+    entityId: applicationId,
+    details: { note: trimmedNote },
+    actorId: user!.id,
+    actorEmail: user!.email,
+  })
+
+  revalidatePath("/oes/admin/secondary")
+  revalidatePath(`/oes/admin/applications/${applicationId}`)
+  return { ok: true }
 }

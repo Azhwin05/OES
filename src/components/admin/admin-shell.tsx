@@ -26,16 +26,19 @@ import { useT } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
 import type { UserRole } from "@/lib/constants"
 
+// `roles` restricts a nav item to the listed roles; omit it to show for everyone.
+// Reviewers get a deliberately narrow nav: their job is reviewing secondary
+// submissions, not bulk shortlist/report/export tools or admin settings.
 const NAV = [
   { href: "/oes/admin", icon: LayoutDashboard, key: "admin.nav.overview", exact: true },
   { href: "/oes/admin/applications", icon: FileText, key: "admin.nav.applications" },
-  { href: "/oes/admin/shortlist", icon: ListChecks, key: "admin.nav.shortlist" },
+  { href: "/oes/admin/shortlist", icon: ListChecks, key: "admin.nav.shortlist", roles: ["super_admin", "admin", "viewer"] as UserRole[] },
   { href: "/oes/admin/secondary", icon: FileCheck2, key: "admin.nav.secondary" },
-  { href: "/oes/admin/reports", icon: BarChart3, key: "admin.nav.reports" },
-  { href: "/oes/admin/export", icon: Download, key: "admin.nav.export" },
-  { href: "/oes/admin/users", icon: Users, key: "admin.nav.users", adminOnly: true },
-  { href: "/oes/admin/audit", icon: ScrollText, key: "admin.nav.audit", adminOnly: true },
-  { href: "/oes/admin/settings", icon: Settings, key: "admin.nav.settings" },
+  { href: "/oes/admin/reports", icon: BarChart3, key: "admin.nav.reports", roles: ["super_admin", "admin", "viewer"] as UserRole[] },
+  { href: "/oes/admin/export", icon: Download, key: "admin.nav.export", roles: ["super_admin", "admin", "viewer"] as UserRole[] },
+  { href: "/oes/admin/users", icon: Users, key: "admin.nav.users", roles: ["super_admin", "admin"] as UserRole[] },
+  { href: "/oes/admin/audit", icon: ScrollText, key: "admin.nav.audit", roles: ["super_admin", "admin"] as UserRole[] },
+  { href: "/oes/admin/settings", icon: Settings, key: "admin.nav.settings", roles: ["super_admin", "admin", "viewer"] as UserRole[] },
 ]
 
 export function AdminShell({
@@ -59,7 +62,7 @@ export function AdminShell({
     router.refresh()
   }
 
-  const items = NAV.filter((n) => !n.adminOnly || role !== "viewer")
+  const items = NAV.filter((n) => !n.roles || n.roles.includes(role))
 
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(href + "/")

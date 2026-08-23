@@ -29,7 +29,7 @@ export const RESIDENCE_TYPES = ["own", "rental"] as const
 export const ROOF_TYPES = ["concrete", "thatched", "tiled"] as const
 export const OWNERSHIP_SOURCES = ["inheritance", "built", "other"] as const
 
-export const USER_ROLES = ["super_admin", "admin", "viewer"] as const
+export const USER_ROLES = ["super_admin", "admin", "viewer", "reviewer"] as const
 export type UserRole = (typeof USER_ROLES)[number]
 
 export const DOCUMENT_TYPES = [
@@ -225,6 +225,29 @@ export type TertiaryAnswers = {
   contactPersonName: string | null
   contactPersonDesignation: InstitutionContactDesignation | null
   contactPersonMobile: string | null
+}
+
+// --- Secondary document review (admin decision workflow) -------------------
+export const SECONDARY_REVIEW_STATUSES = [
+  "pending",
+  "approved",
+  "rejected",
+  "needs_correction",
+] as const
+export type SecondaryReviewStatus = (typeof SECONDARY_REVIEW_STATUSES)[number]
+
+export const SECONDARY_REVIEW_STATUS_LABELS: Record<SecondaryReviewStatus, string> = {
+  pending: "Pending Review",
+  approved: "Approved",
+  rejected: "Rejected",
+  needs_correction: "Needs Correction",
+}
+
+export const SECONDARY_REVIEW_STATUS_CLASSNAMES: Record<SecondaryReviewStatus, string> = {
+  pending: "bg-muted text-muted-foreground border-border",
+  approved: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  rejected: "bg-rose-100 text-rose-800 border-rose-200",
+  needs_correction: "bg-amber-100 text-amber-800 border-amber-200",
 }
 
 // Visual config for statuses (Tailwind classes + i18n key).

@@ -52,3 +52,16 @@ export function canManage(user: SessionUser | null): boolean {
     (user.profile.role === "admin" || user.profile.role === "super_admin")
   )
 }
+
+/** Admin/super_admin/reviewer can review & decide secondary submissions; viewer cannot. */
+export function canReviewSecondary(user: SessionUser | null): boolean {
+  return !!user?.profile && user.profile.role !== "viewer"
+}
+
+/** True for admin/super_admin only — used to gate admin-only pages (Users, Audit). */
+export function isAdminRole(user: SessionUser | null): boolean {
+  return (
+    !!user?.profile &&
+    (user.profile.role === "admin" || user.profile.role === "super_admin")
+  )
+}

@@ -5,6 +5,7 @@ import {
   SECONDARY_DOCUMENT_LABELS,
   type AppStatus,
   type SecondaryDocumentType,
+  type SecondaryReviewStatus,
 } from "@/lib/constants"
 
 // Reads use the service-role client; the dashboard layout already authorizes
@@ -322,6 +323,7 @@ export type SecondarySubmissionRow = {
   secondary_submitted_at: string | null
   coreDocsUploaded: number
   coreDocsTotal: number
+  reviewStatus: SecondaryReviewStatus
 }
 
 export type SecondaryOverview = {
@@ -331,6 +333,10 @@ export type SecondaryOverview = {
   notStarted: number
   submissionRate: number
   daysLeft: number
+  pendingReview: number
+  approved: number
+  rejected: number
+  needsCorrection: number
   trend: { date: string; count: number }[]
   documentCoverage: { type: string; label: string; count: number }[]
   rows: SecondarySubmissionRow[]
@@ -353,6 +359,7 @@ type SecondaryAppEmbedded = {
   reference_number: string
   applicant_name: string
   secondary_submitted_at: string | null
+  secondary_review_status: SecondaryReviewStatus
   oes_personal_details: { district: string | null }[]
 }
 
@@ -363,7 +370,7 @@ export async function getSecondaryOverview(): Promise<SecondaryOverview> {
     admin
       .from("oes_applications")
       .select(
-        "id, reference_number, applicant_name, secondary_submitted_at, oes_personal_details(district)"
+        "id, reference_number, applicant_name, secondary_submitted_at, secondary_review_status, oes_personal_details(district)"
       )
       .eq("shortlisted", true)
       .is("deleted_at", null)
@@ -404,6 +411,7 @@ export async function getSecondaryOverview(): Promise<SecondaryOverview> {
       secondary_submitted_at: a.secondary_submitted_at,
       coreDocsUploaded: CORE_SECONDARY_DOCS.filter((t) => uploadedTypes.has(t)).length,
       coreDocsTotal: CORE_SECONDARY_DOCS.length,
+      reviewStatus: a.secondary_review_status,
     }
   })
 
@@ -411,6 +419,12 @@ export async function getSecondaryOverview(): Promise<SecondaryOverview> {
   const inProgress = rows.filter((r) => !r.secondary_submitted_at && r.coreDocsUploaded > 0).length
   const notStarted = rows.length - submitted - inProgress
   const submissionRate = rows.length ? Math.round((submitted / rows.length) * 1000) / 10 : 0
+
+  const submittedRows = rows.filter((r) => r.secondary_submitted_at)
+  const approved = submittedRows.filter((r) => r.reviewStatus === "approved").length
+  const rejected = submittedRows.filter((r) => r.reviewStatus === "rejected").length
+  const needsCorrection = submittedRows.filter((r) => r.reviewStatus === "needs_correction").length
+  const pendingReview = submittedRows.filter((r) => r.reviewStatus === "pending").length
 
   const trendMap = new Map<string, number>()
   for (const r of rows) {
@@ -444,6 +458,10 @@ export async function getSecondaryOverview(): Promise<SecondaryOverview> {
     notStarted,
     submissionRate,
     daysLeft,
+    pendingReview,
+    approved,
+    rejected,
+    needsCorrection,
     trend,
     documentCoverage,
     rows,

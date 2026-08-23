@@ -79,6 +79,17 @@ export async function submitSecondaryDocuments(
   }
 
   if (uploads.length > 0) {
+    // On a correction resubmission, a re-uploaded type replaces the old file
+    // rather than piling up alongside it (soft-delete, storage object is left
+    // in place — only the admin-facing document list is deduplicated).
+    const typesBeingReplaced = [...new Set(uploads.map((u) => u.document_type))]
+    await admin
+      .from("oes_documents")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("application_id", applicant.applicationId)
+      .in("document_type", typesBeingReplaced)
+      .is("deleted_at", null)
+
     const { error } = await admin.from("oes_documents").insert(
       uploads.map((u) => ({
         application_id: applicant.applicationId,
@@ -96,9 +107,16 @@ export async function submitSecondaryDocuments(
     }
   }
 
+  // A fresh submission always needs fresh review — clears any prior decision.
   const { error: submitError } = await admin
     .from("oes_applications")
-    .update({ secondary_submitted_at: new Date().toISOString() })
+    .update({
+      secondary_submitted_at: new Date().toISOString(),
+      secondary_review_status: "pending",
+      secondary_review_note: null,
+      secondary_reviewed_at: null,
+      secondary_reviewed_by: null,
+    })
     .eq("id", applicant.applicationId)
 
   if (submitError) {

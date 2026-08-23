@@ -34,6 +34,9 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  ClipboardCheck,
+  XCircle,
+  AlertTriangle,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -50,6 +53,10 @@ import {
 import { useT } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
 import { exportToExcel, exportToCsv } from "@/lib/export"
+import {
+  SECONDARY_REVIEW_STATUS_CLASSNAMES,
+  type SecondaryReviewStatus,
+} from "@/lib/constants"
 import type { SecondaryOverview, SecondarySubmissionRow } from "@/lib/queries"
 
 type Status = "submitted" | "in_progress" | "not_started"
@@ -80,6 +87,16 @@ export function SecondaryView({ overview }: { overview: SecondaryOverview }) {
     [t]
   )
 
+  const reviewStatusLabel: Record<SecondaryReviewStatus, string> = useMemo(
+    () => ({
+      pending: t("secondary.status.review.pending"),
+      approved: t("secondary.status.review.approved"),
+      rejected: t("secondary.status.review.rejected"),
+      needs_correction: t("secondary.status.review.needs_correction"),
+    }),
+    [t]
+  )
+
   const cards = [
     { icon: Users, label: t("secondary.stat.total"), value: overview.totalShortlisted, tone: "text-primary" },
     { icon: CheckCircle2, label: t("secondary.stat.submitted"), value: overview.submitted, tone: "text-emerald-600" },
@@ -87,10 +104,15 @@ export function SecondaryView({ overview }: { overview: SecondaryOverview }) {
     { icon: CircleDashed, label: t("secondary.stat.notStarted"), value: overview.notStarted, tone: "text-muted-foreground" },
     { icon: TrendingUp, label: t("secondary.stat.rate"), value: `${overview.submissionRate}%`, tone: "text-primary" },
     { icon: CalendarClock, label: t("secondary.stat.daysLeft"), value: daysLeft, tone: daysLeft <= 3 ? "text-destructive" : "text-primary" },
+    { icon: ClipboardCheck, label: t("secondary.stat.pendingReview"), value: overview.pendingReview, tone: "text-amber-600" },
+    { icon: CheckCircle2, label: t("secondary.stat.approved"), value: overview.approved, tone: "text-emerald-600" },
+    { icon: XCircle, label: t("secondary.stat.rejected"), value: overview.rejected, tone: "text-rose-600" },
+    { icon: AlertTriangle, label: t("secondary.stat.needsCorrection"), value: overview.needsCorrection, tone: "text-amber-600" },
   ]
 
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<string>(ALL)
+  const [reviewFilter, setReviewFilter] = useState<string>(ALL)
   const [sorting, setSorting] = useState<SortingState>([])
 
   const filtered = useMemo(() => {
@@ -101,9 +123,10 @@ export function SecondaryView({ overview }: { overview: SecondaryOverview }) {
         if (!hay.includes(q)) return false
       }
       if (status !== ALL && statusOf(r) !== status) return false
+      if (reviewFilter !== ALL && r.reviewStatus !== reviewFilter) return false
       return true
     })
-  }, [rows, search, status])
+  }, [rows, search, status, reviewFilter])
 
   const columns = useMemo<ColumnDef<SecondarySubmissionRow>[]>(
     () => [
@@ -171,6 +194,21 @@ export function SecondaryView({ overview }: { overview: SecondaryOverview }) {
             : "—",
       },
       {
+        id: "review",
+        header: t("secondary.table.review"),
+        cell: ({ row }) =>
+          row.original.secondary_submitted_at ? (
+            <Badge
+              variant="outline"
+              className={cn("font-medium", SECONDARY_REVIEW_STATUS_CLASSNAMES[row.original.reviewStatus])}
+            >
+              {reviewStatusLabel[row.original.reviewStatus]}
+            </Badge>
+          ) : (
+            "—"
+          ),
+      },
+      {
         id: "actions",
         header: t("common.actions"),
         cell: ({ row }) => (
@@ -186,7 +224,7 @@ export function SecondaryView({ overview }: { overview: SecondaryOverview }) {
         enableSorting: false,
       },
     ],
-    [t, statusLabel]
+    [t, statusLabel, reviewStatusLabel]
   )
 
   const table = useReactTable({
@@ -209,6 +247,7 @@ export function SecondaryView({ overview }: { overview: SecondaryOverview }) {
       Status: statusLabel[statusOf(r)],
       CoreDocuments: `${r.coreDocsUploaded}/${r.coreDocsTotal}`,
       SubmittedAt: r.secondary_submitted_at ? new Date(r.secondary_submitted_at).toLocaleString() : "",
+      ReviewStatus: r.secondary_submitted_at ? reviewStatusLabel[r.reviewStatus] : "",
     }))
     const name = `oes-secondary-submissions-${new Date().toISOString().slice(0, 10)}`
     if (kind === "xlsx") exportToExcel(flat, name)
@@ -292,6 +331,16 @@ export function SecondaryView({ overview }: { overview: SecondaryOverview }) {
                 <SelectItem value="submitted">{statusLabel.submitted}</SelectItem>
                 <SelectItem value="in_progress">{statusLabel.in_progress}</SelectItem>
                 <SelectItem value="not_started">{statusLabel.not_started}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={reviewFilter} onValueChange={(v) => setReviewFilter(v ?? ALL)}>
+              <SelectTrigger className="h-9 w-full sm:w-48"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t("common.all")}</SelectItem>
+                <SelectItem value="pending">{reviewStatusLabel.pending}</SelectItem>
+                <SelectItem value="approved">{reviewStatusLabel.approved}</SelectItem>
+                <SelectItem value="rejected">{reviewStatusLabel.rejected}</SelectItem>
+                <SelectItem value="needs_correction">{reviewStatusLabel.needs_correction}</SelectItem>
               </SelectContent>
             </Select>
           </div>

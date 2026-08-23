@@ -33,7 +33,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { StatusBadge } from "@/components/status-badge"
+import { Badge } from "@/components/ui/badge"
 import { useT } from "@/lib/i18n/context"
+import { cn } from "@/lib/utils"
 import {
   updateStatus,
   addRemark,
@@ -41,9 +43,14 @@ import {
   getDocumentSignedUrl,
   getDocumentSignedUrls,
   logZipExport,
+  setSecondaryReviewStatus,
 } from "@/app/oes/admin/actions"
 import { triggerDownload } from "@/lib/export"
-import type { AppStatus } from "@/lib/constants"
+import {
+  SECONDARY_REVIEW_STATUS_CLASSNAMES,
+  type AppStatus,
+  type SecondaryReviewStatus,
+} from "@/lib/constants"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Detail = any
@@ -51,9 +58,11 @@ type Detail = any
 export function ApplicationDetail({
   app,
   canManage,
+  canReview,
 }: {
   app: Detail
   canManage: boolean
+  canReview: boolean
 }) {
   const t = useT()
   const router = useRouter()
@@ -61,6 +70,8 @@ export function ApplicationDetail({
   const [busy, setBusy] = useState(false)
   const [confirmDel, setConfirmDel] = useState(false)
   const [zipBusy, setZipBusy] = useState(false)
+  const [reviewNote, setReviewNote] = useState("")
+  const [reviewBusy, setReviewBusy] = useState(false)
 
   const p = app.oes_personal_details?.[0] ?? {}
   const e = app.oes_education_details?.[0] ?? {}
@@ -96,6 +107,23 @@ export function ApplicationDetail({
       toast.success(t("detail.remarkAdded"))
       router.refresh()
     } else toast.error(t("err.unauthorized"))
+  }
+
+  async function reviewSecondary(decision: SecondaryReviewStatus) {
+    if (decision === "needs_correction" && !reviewNote.trim()) {
+      toast.error(t("detail.review.noteRequired"))
+      return
+    }
+    setReviewBusy(true)
+    const res = await setSecondaryReviewStatus(app.id, decision, reviewNote)
+    setReviewBusy(false)
+    if (res.ok) {
+      setReviewNote("")
+      toast.success(t("detail.review.updated"))
+      router.refresh()
+    } else {
+      toast.error(res.error === "note_required" ? t("detail.review.noteRequired") : t("err.unauthorized"))
+    }
   }
 
   async function doDelete() {
@@ -399,6 +427,72 @@ export function ApplicationDetail({
         </div>
 
         <div className="space-y-5">
+          {app.secondary_submitted_at && (
+            <Card className="no-print">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">{t("detail.review.title")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-xs">{t("detail.review.status")}</span>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "font-medium",
+                      SECONDARY_REVIEW_STATUS_CLASSNAMES[app.secondary_review_status as SecondaryReviewStatus]
+                    )}
+                  >
+                    {t(`secondary.status.review.${app.secondary_review_status}`)}
+                  </Badge>
+                </div>
+                {app.secondary_reviewed_at && (
+                  <p className="text-muted-foreground text-xs">
+                    {t("detail.review.reviewedAt")} {new Date(app.secondary_reviewed_at).toLocaleString()}
+                  </p>
+                )}
+                {app.secondary_review_note && (
+                  <p className="rounded-md bg-muted/40 p-2 text-sm">{app.secondary_review_note}</p>
+                )}
+                {canReview && (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={reviewNote}
+                      onChange={(ev) => setReviewNote(ev.target.value)}
+                      placeholder={t("detail.review.notePlaceholder")}
+                      rows={2}
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        disabled={reviewBusy}
+                        onClick={() => reviewSecondary("approved")}
+                        className="bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        <CheckCircle2 className="mr-1 h-4 w-4" /> {t("detail.review.approve")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        disabled={reviewBusy}
+                        onClick={() => reviewSecondary("rejected")}
+                      >
+                        <XCircle className="mr-1 h-4 w-4" /> {t("detail.review.reject")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={reviewBusy}
+                        onClick={() => reviewSecondary("needs_correction")}
+                      >
+                        <AlertTriangle className="mr-1 h-4 w-4" /> {t("detail.review.needsCorrection")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">{t("detail.timeline")}</CardTitle></CardHeader>
             <CardContent>

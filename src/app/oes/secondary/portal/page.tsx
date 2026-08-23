@@ -21,7 +21,9 @@ export default async function SecondaryPortalPage() {
   ] = await Promise.all([
     admin
       .from("oes_applications")
-      .select("reference_number, applicant_name, status, secondary_submitted_at")
+      .select(
+        "reference_number, applicant_name, status, secondary_submitted_at, secondary_review_status, secondary_review_note"
+      )
       .eq("id", applicant.applicationId)
       .single(),
     admin

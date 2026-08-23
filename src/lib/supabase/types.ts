@@ -11,6 +11,7 @@ import type {
   DocumentType,
   SecondaryDocumentType,
   TertiaryDocumentType,
+  SecondaryReviewStatus,
 } from "@/lib/constants"
 
 type Timestamps = {
@@ -40,6 +41,10 @@ export type ApplicationRow = {
   secondary_submitted_at: string | null
   secondary_password_hash: string | null
   tertiary_submitted_at: string | null
+  secondary_review_status: SecondaryReviewStatus
+  secondary_review_note: string | null
+  secondary_reviewed_at: string | null
+  secondary_reviewed_by: string | null
 } & Timestamps
 
 export type PersonalRow = {

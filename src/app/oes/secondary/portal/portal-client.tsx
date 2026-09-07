@@ -6,11 +6,9 @@ import { LogOut, Upload, Download, CheckCircle2, User, GraduationCap, Users } fr
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { createClient } from "@/lib/supabase/client"
-import { validateFile } from "@/lib/upload"
+import { validateFile, uploadToR2, R2_BUCKET } from "@/lib/upload"
 import {
   SECONDARY_DOCUMENT_LABELS,
-  DOCS_BUCKET,
   INCOME_PROOF_FOR,
   INCOME_PROOF_FOR_LABELS,
   SINGLE_PARENT_LIVING_WITH,
@@ -32,13 +30,9 @@ async function uploadSecondaryFile(
   slot: string,
   file: File
 ): Promise<string> {
-  const supabase = createClient()
   const safeName = file.name.replace(/[^\w.\-]+/g, "_")
   const path = `applications/${referenceNumber}/secondary/${type}/${slot}_${Date.now()}_${safeName}`
-  const { error } = await supabase.storage
-    .from(DOCS_BUCKET)
-    .upload(path, file, { upsert: false, contentType: file.type })
-  if (error) throw error
+  await uploadToR2(path, file)
   return path
 }
 
@@ -225,7 +219,7 @@ export function SecondaryPortalClient({
           fileName: file.name,
           doc: {
             document_type: row.type,
-            bucket: DOCS_BUCKET,
+            bucket: R2_BUCKET,
             path,
             file_name: file.name,
             mime_type: file.type,

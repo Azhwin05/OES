@@ -14,8 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { createClient } from "@/lib/supabase/client"
-import { validateFile } from "@/lib/upload"
+import { validateFile, uploadToR2, R2_BUCKET } from "@/lib/upload"
 import {
   TERTIARY_DOCUMENT_TYPES,
   TERTIARY_DOCUMENT_MANDATORY,
@@ -24,7 +23,6 @@ import {
   PAYMENT_MODE_LABELS,
   INSTITUTION_CONTACT_DESIGNATIONS,
   INSTITUTION_CONTACT_DESIGNATION_LABELS,
-  DOCS_BUCKET,
   type TertiaryDocumentType,
   type TertiaryAnswers,
   type PaymentMode,
@@ -37,13 +35,9 @@ async function uploadTertiaryFile(
   type: TertiaryDocumentType,
   file: File
 ): Promise<string> {
-  const supabase = createClient()
   const safeName = file.name.replace(/[^\w.\-]+/g, "_")
   const path = `applications/${referenceNumber}/tertiary/${type}/${Date.now()}_${safeName}`
-  const { error } = await supabase.storage
-    .from(DOCS_BUCKET)
-    .upload(path, file, { upsert: false, contentType: file.type })
-  if (error) throw error
+  await uploadToR2(path, file)
   return path
 }
 
@@ -115,7 +109,7 @@ export function TertiaryPortalClient({ application, existingDocs, existingAnswer
           fileName: file.name,
           doc: {
             document_type: type,
-            bucket: DOCS_BUCKET,
+            bucket: R2_BUCKET,
             path,
             file_name: file.name,
             mime_type: file.type,

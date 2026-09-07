@@ -2,8 +2,8 @@
 
 import { createAdminClient } from "@/lib/supabase/admin"
 import { fullApplicationSchema } from "@/lib/validation/schemas"
-import { bucketForDocType } from "@/lib/constants"
 import { writeAudit } from "@/lib/audit"
+import { moveObject, objectExists, R2_BUCKET } from "@/lib/r2"
 
 export type SubmitResult =
   | { ok: true; reference: string }
@@ -75,25 +75,22 @@ export async function submitApplication(payload: unknown): Promise<SubmitResult>
 
   // 3. Finalize documents: move from draft path to reference path, record rows.
   for (const doc of data.documents) {
-    const bucket = doc.bucket || bucketForDocType(doc.document_type)
     const finalPath = `applications/${reference}/${doc.document_type}/${
       doc.file_name ?? "file"
     }`
     try {
       if (doc.path !== finalPath) {
-        await admin.storage.from(bucket).move(doc.path, finalPath)
+        await moveObject(doc.path, finalPath)
       }
     } catch (e) {
       // Non-fatal: keep original path if the move fails.
       console.error("document move failed", e)
     }
-    const storedPath = await pathExists(admin, bucket, finalPath)
-      ? finalPath
-      : doc.path
+    const storedPath = (await objectExists(finalPath)) ? finalPath : doc.path
     await admin.from("oes_documents").insert({
       application_id: appId,
       document_type: doc.document_type,
-      bucket,
+      bucket: R2_BUCKET,
       path: storedPath,
       file_name: doc.file_name ?? null,
       mime_type: doc.mime_type ?? null,
@@ -118,16 +115,4 @@ export async function submitApplication(payload: unknown): Promise<SubmitResult>
   })
 
   return { ok: true, reference }
-}
-
-async function pathExists(
-  admin: ReturnType<typeof createAdminClient>,
-  bucket: string,
-  fullPath: string
-): Promise<boolean> {
-  const idx = fullPath.lastIndexOf("/")
-  const dir = fullPath.slice(0, idx)
-  const name = fullPath.slice(idx + 1)
-  const { data } = await admin.storage.from(bucket).list(dir, { search: name })
-  return !!data?.some((f) => f.name === name)
 }

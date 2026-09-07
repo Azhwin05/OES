@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getSessionUser, canManage, canReviewSecondary } from "@/lib/auth"
 import { writeAudit } from "@/lib/audit"
+import { getDownloadUrl as getR2DownloadUrl, getDownloadUrls as getR2DownloadUrls } from "@/lib/r2"
 import {
   APP_STATUSES,
   USER_ROLES,
@@ -179,37 +180,22 @@ export async function getDocumentSignedUrl(
 ): Promise<{ url?: string; error?: string }> {
   const user = await getSessionUser()
   if (!user?.profile) return { error: "unauthorized" }
-  const admin = createAdminClient()
-  const { data, error } = await admin.storage
-    .from(bucket)
-    .createSignedUrl(path, 60 * 10)
-  if (error || !data) return { error: "server" }
-  return { url: data.signedUrl }
+  try {
+    const url = await getR2DownloadUrl(path)
+    return { url }
+  } catch {
+    return { error: "server" }
+  }
 }
 
-/** Batch signed URLs for a full-record ZIP export. One round trip instead of one per file. */
+/** Batch signed URLs for a full-record ZIP export. Presigning is a local operation, so this is cheap regardless of count. */
 export async function getDocumentSignedUrls(
   files: { bucket: string; path: string }[]
 ): Promise<{ url: string | null }[]> {
   const user = await getSessionUser()
   if (!user?.profile) return files.map(() => ({ url: null }))
-  const admin = createAdminClient()
-
-  const byBucket = new Map<string, string[]>()
-  for (const f of files) {
-    if (!byBucket.has(f.bucket)) byBucket.set(f.bucket, [])
-    byBucket.get(f.bucket)!.push(f.path)
-  }
-
-  const urlsByBucketAndPath = new Map<string, string>()
-  for (const [bucket, paths] of byBucket) {
-    const { data } = await admin.storage.from(bucket).createSignedUrls(paths, 60 * 10)
-    for (const d of data ?? []) {
-      if (d.signedUrl && d.path) urlsByBucketAndPath.set(`${bucket}:${d.path}`, d.signedUrl)
-    }
-  }
-
-  return files.map((f) => ({ url: urlsByBucketAndPath.get(`${f.bucket}:${f.path}`) ?? null }))
+  const urls = await getR2DownloadUrls(files.map((f) => f.path))
+  return urls.map((url) => ({ url }))
 }
 
 /** Audit trail for bulk data exports — a ZIP contains every document + full PII, worth logging distinctly from single-document views. */

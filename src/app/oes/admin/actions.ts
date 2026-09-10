@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { getSessionUser, canManage, canReviewSecondary } from "@/lib/auth"
+import { getSessionUser, canManage, canReviewSecondary, canActOnAssignment } from "@/lib/auth"
 import { writeAudit } from "@/lib/audit"
 import { getDownloadUrl as getR2DownloadUrl, getDownloadUrls as getR2DownloadUrls } from "@/lib/r2"
 import {
@@ -218,6 +218,13 @@ export async function logZipExport(applicationId: string, referenceNumber: strin
  * admin, reviewer). "needs_correction" requires a note — the candidate's
  * portal reopens for them, and they need to know what to fix.
  */
+/**
+ * Records the REVIEWER's recommendation — not final. A plain reviewer can
+ * only act on candidates assigned to them; admin/super_admin can act on
+ * anyone. This never touches secondary_final_status — only
+ * setSecondaryFinalStatus (admin/super_admin only) does, and only the final
+ * status drives candidate-facing effects like reopening the portal.
+ */
 export async function setSecondaryReviewStatus(
   applicationId: string,
   decision: SecondaryReviewStatus,
@@ -228,12 +235,22 @@ export async function setSecondaryReviewStatus(
   if (!SECONDARY_REVIEW_STATUSES.includes(decision) || decision === "pending") {
     return { ok: false, error: "invalid" }
   }
+
+  const admin = createAdminClient()
+  const { data: app } = await admin
+    .from("oes_applications")
+    .select("secondary_assigned_reviewer_id")
+    .eq("id", applicationId)
+    .single()
+  if (!app || !canActOnAssignment(user, app.secondary_assigned_reviewer_id)) {
+    return { ok: false, error: "not_assigned" }
+  }
+
   const trimmedNote = note?.trim() || null
   if (decision === "needs_correction" && !trimmedNote) {
     return { ok: false, error: "note_required" }
   }
 
-  const admin = createAdminClient()
   const { error } = await admin
     .from("oes_applications")
     .update({
@@ -257,5 +274,95 @@ export async function setSecondaryReviewStatus(
 
   revalidatePath("/oes/admin/secondary")
   revalidatePath(`/oes/admin/applications/${applicationId}`)
+  return { ok: true }
+}
+
+/**
+ * The SuperAdmin/admin's FINAL decision — this is the one that's actually
+ * authoritative. Only this drives candidate-facing effects (the portal
+ * reopening for "needs_correction" checks secondary_final_status, never the
+ * reviewer's recommendation).
+ */
+export async function setSecondaryFinalStatus(
+  applicationId: string,
+  decision: SecondaryReviewStatus,
+  note?: string
+): Promise<ActionResult> {
+  const user = await getSessionUser()
+  if (!canManage(user)) return { ok: false, error: "unauthorized" }
+  if (!SECONDARY_REVIEW_STATUSES.includes(decision) || decision === "pending") {
+    return { ok: false, error: "invalid" }
+  }
+  const trimmedNote = note?.trim() || null
+  if (decision === "needs_correction" && !trimmedNote) {
+    return { ok: false, error: "note_required" }
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from("oes_applications")
+    .update({
+      secondary_final_status: decision,
+      secondary_final_note: trimmedNote,
+      secondary_finalized_at: new Date().toISOString(),
+      secondary_finalized_by: user!.id,
+    })
+    .eq("id", applicationId)
+
+  if (error) return { ok: false, error: "server" }
+
+  await writeAudit({
+    action: `secondary_final.${decision}`,
+    entity: "application",
+    entityId: applicationId,
+    details: { note: trimmedNote },
+    actorId: user!.id,
+    actorEmail: user!.email,
+  })
+
+  revalidatePath("/oes/admin/secondary")
+  revalidatePath(`/oes/admin/applications/${applicationId}`)
+  return { ok: true }
+}
+
+/** Bulk-assigns a batch of candidates to a reviewer. Admin/super_admin only. */
+export async function assignSecondaryReviewer(
+  applicationIds: string[],
+  reviewerId: string | null
+): Promise<ActionResult> {
+  const user = await getSessionUser()
+  if (!canManage(user)) return { ok: false, error: "unauthorized" }
+  if (applicationIds.length === 0) return { ok: false, error: "invalid" }
+
+  if (reviewerId) {
+    const { data: reviewer } = await createAdminClient()
+      .from("oes_profiles")
+      .select("role")
+      .eq("id", reviewerId)
+      .maybeSingle()
+    if (!reviewer || reviewer.role === "viewer") return { ok: false, error: "invalid_reviewer" }
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from("oes_applications")
+    .update({
+      secondary_assigned_reviewer_id: reviewerId,
+      secondary_assigned_at: new Date().toISOString(),
+      secondary_assigned_by: user!.id,
+    })
+    .in("id", applicationIds)
+
+  if (error) return { ok: false, error: "server" }
+
+  await writeAudit({
+    action: reviewerId ? "secondary_review.assigned" : "secondary_review.unassigned",
+    entity: "application",
+    details: { applicationIds, reviewerId, count: applicationIds.length },
+    actorId: user!.id,
+    actorEmail: user!.email,
+  })
+
+  revalidatePath("/oes/admin/secondary")
   return { ok: true }
 }

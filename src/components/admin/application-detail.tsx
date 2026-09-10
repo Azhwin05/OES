@@ -34,6 +34,13 @@ import {
 } from "@/components/ui/dialog"
 import { StatusBadge } from "@/components/status-badge"
 import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useT } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
 import {
@@ -44,6 +51,8 @@ import {
   getDocumentSignedUrls,
   logZipExport,
   setSecondaryReviewStatus,
+  setSecondaryFinalStatus,
+  assignSecondaryReviewer,
 } from "@/app/oes/admin/actions"
 import { triggerDownload } from "@/lib/export"
 import {
@@ -59,10 +68,12 @@ export function ApplicationDetail({
   app,
   canManage,
   canReview,
+  reviewers,
 }: {
   app: Detail
   canManage: boolean
   canReview: boolean
+  reviewers: { id: string; name: string; email: string }[]
 }) {
   const t = useT()
   const router = useRouter()
@@ -72,6 +83,9 @@ export function ApplicationDetail({
   const [zipBusy, setZipBusy] = useState(false)
   const [reviewNote, setReviewNote] = useState("")
   const [reviewBusy, setReviewBusy] = useState(false)
+  const [finalNote, setFinalNote] = useState("")
+  const [finalBusy, setFinalBusy] = useState(false)
+  const [assignBusy, setAssignBusy] = useState(false)
 
   const p = app.oes_personal_details?.[0] ?? {}
   const e = app.oes_education_details?.[0] ?? {}
@@ -123,6 +137,35 @@ export function ApplicationDetail({
       router.refresh()
     } else {
       toast.error(res.error === "note_required" ? t("detail.review.noteRequired") : t("err.unauthorized"))
+    }
+  }
+
+  async function finalizeSecondary(decision: SecondaryReviewStatus) {
+    if (decision === "needs_correction" && !finalNote.trim()) {
+      toast.error(t("detail.review.noteRequired"))
+      return
+    }
+    setFinalBusy(true)
+    const res = await setSecondaryFinalStatus(app.id, decision, finalNote)
+    setFinalBusy(false)
+    if (res.ok) {
+      setFinalNote("")
+      toast.success(t("detail.final.updated"))
+      router.refresh()
+    } else {
+      toast.error(res.error === "note_required" ? t("detail.review.noteRequired") : t("err.unauthorized"))
+    }
+  }
+
+  async function reassignReviewer(reviewerId: string) {
+    setAssignBusy(true)
+    const res = await assignSecondaryReviewer([app.id], reviewerId === "__unassigned__" ? null : reviewerId)
+    setAssignBusy(false)
+    if (res.ok) {
+      toast.success(t("secondary.assign.success"))
+      router.refresh()
+    } else {
+      toast.error(t("err.unauthorized"))
     }
   }
 
@@ -428,69 +471,178 @@ export function ApplicationDetail({
 
         <div className="space-y-5">
           {app.secondary_submitted_at && (
-            <Card className="no-print">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">{t("detail.review.title")}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-xs">{t("detail.review.status")}</span>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "font-medium",
-                      SECONDARY_REVIEW_STATUS_CLASSNAMES[app.secondary_review_status as SecondaryReviewStatus]
-                    )}
-                  >
-                    {t(`secondary.status.review.${app.secondary_review_status}`)}
-                  </Badge>
-                </div>
-                {app.secondary_reviewed_at && (
-                  <p className="text-muted-foreground text-xs">
-                    {t("detail.review.reviewedAt")} {new Date(app.secondary_reviewed_at).toLocaleString()}
-                  </p>
-                )}
-                {app.secondary_review_note && (
-                  <p className="rounded-md bg-muted/40 p-2 text-sm">{app.secondary_review_note}</p>
-                )}
-                {canReview && (
-                  <div className="space-y-2">
-                    <Textarea
-                      value={reviewNote}
-                      onChange={(ev) => setReviewNote(ev.target.value)}
-                      placeholder={t("detail.review.notePlaceholder")}
-                      rows={2}
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        size="sm"
-                        disabled={reviewBusy}
-                        onClick={() => reviewSecondary("approved")}
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        <CheckCircle2 className="mr-1 h-4 w-4" /> {t("detail.review.approve")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        disabled={reviewBusy}
-                        onClick={() => reviewSecondary("rejected")}
-                      >
-                        <XCircle className="mr-1 h-4 w-4" /> {t("detail.review.reject")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={reviewBusy}
-                        onClick={() => reviewSecondary("needs_correction")}
-                      >
-                        <AlertTriangle className="mr-1 h-4 w-4" /> {t("detail.review.needsCorrection")}
-                      </Button>
-                    </div>
+            <>
+              {canManage && (
+                <Card className="no-print">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">{t("secondary.table.assignedTo")}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <Select
+                      items={[
+                        { value: "__unassigned__", label: t("secondary.table.unassignedLabel") },
+                        ...reviewers.map((r) => ({ value: r.id, label: r.name })),
+                      ]}
+                      value={app.secondary_assigned_reviewer_id ?? "__unassigned__"}
+                      onValueChange={(v) => v && reassignReviewer(v)}
+                      disabled={assignBusy}
+                    >
+                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__unassigned__">{t("secondary.table.unassignedLabel")}</SelectItem>
+                        {reviewers.map((r) => (
+                          <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card className="no-print">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">{t("detail.review.title")}</CardTitle>
+                  {app.assigned_reviewer && (
+                    <p className="text-muted-foreground text-xs">
+                      {t("secondary.table.assignedTo")}: {app.assigned_reviewer.full_name ?? app.assigned_reviewer.email}
+                    </p>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground text-xs">{t("detail.review.status")}</span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "font-medium",
+                        SECONDARY_REVIEW_STATUS_CLASSNAMES[app.secondary_review_status as SecondaryReviewStatus]
+                      )}
+                    >
+                      {t(`secondary.status.review.${app.secondary_review_status}`)}
+                    </Badge>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  {app.secondary_reviewed_at && (
+                    <p className="text-muted-foreground text-xs">
+                      {t("detail.review.reviewedAt")}{" "}
+                      {app.reviewed_by_profile?.full_name ?? app.reviewed_by_profile?.email ?? ""}
+                      {" · "}
+                      {new Date(app.secondary_reviewed_at).toLocaleString()}
+                    </p>
+                  )}
+                  {app.secondary_review_note && (
+                    <p className="rounded-md bg-muted/40 p-2 text-sm">{app.secondary_review_note}</p>
+                  )}
+                  {canReview ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={reviewNote}
+                        onChange={(ev) => setReviewNote(ev.target.value)}
+                        placeholder={t("detail.review.notePlaceholder")}
+                        rows={2}
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          disabled={reviewBusy}
+                          onClick={() => reviewSecondary("approved")}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          <CheckCircle2 className="mr-1 h-4 w-4" /> {t("detail.review.approve")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={reviewBusy}
+                          onClick={() => reviewSecondary("rejected")}
+                        >
+                          <XCircle className="mr-1 h-4 w-4" /> {t("detail.review.reject")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={reviewBusy}
+                          onClick={() => reviewSecondary("needs_correction")}
+                        >
+                          <AlertTriangle className="mr-1 h-4 w-4" /> {t("detail.review.needsCorrection")}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    !canManage && (
+                      <p className="text-muted-foreground text-xs italic">{t("detail.review.notAssignedToYou")}</p>
+                    )
+                  )}
+                </CardContent>
+              </Card>
+
+              {canManage && (
+                <Card className="no-print border-primary/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">{t("detail.final.title")}</CardTitle>
+                    <p className="text-muted-foreground text-xs">{t("detail.final.subtitle")}</p>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground text-xs">{t("detail.review.status")}</span>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "font-medium",
+                          SECONDARY_REVIEW_STATUS_CLASSNAMES[app.secondary_final_status as SecondaryReviewStatus]
+                        )}
+                      >
+                        {t(`secondary.status.review.${app.secondary_final_status}`)}
+                      </Badge>
+                    </div>
+                    {app.secondary_finalized_at && (
+                      <p className="text-muted-foreground text-xs">
+                        {t("detail.review.reviewedAt")}{" "}
+                        {app.finalized_by_profile?.full_name ?? app.finalized_by_profile?.email ?? ""}
+                        {" · "}
+                        {new Date(app.secondary_finalized_at).toLocaleString()}
+                      </p>
+                    )}
+                    {app.secondary_final_note && (
+                      <p className="rounded-md bg-muted/40 p-2 text-sm">{app.secondary_final_note}</p>
+                    )}
+                    <div className="space-y-2">
+                      <Textarea
+                        value={finalNote}
+                        onChange={(ev) => setFinalNote(ev.target.value)}
+                        placeholder={t("detail.review.notePlaceholder")}
+                        rows={2}
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          disabled={finalBusy}
+                          onClick={() => finalizeSecondary("approved")}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          <CheckCircle2 className="mr-1 h-4 w-4" /> {t("detail.review.approve")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={finalBusy}
+                          onClick={() => finalizeSecondary("rejected")}
+                        >
+                          <XCircle className="mr-1 h-4 w-4" /> {t("detail.review.reject")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={finalBusy}
+                          onClick={() => finalizeSecondary("needs_correction")}
+                        >
+                          <AlertTriangle className="mr-1 h-4 w-4" /> {t("detail.review.needsCorrection")}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
 
           <Card>

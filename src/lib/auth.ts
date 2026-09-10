@@ -65,3 +65,18 @@ export function isAdminRole(user: SessionUser | null): boolean {
     (user.profile.role === "admin" || user.profile.role === "super_admin")
   )
 }
+
+/**
+ * A plain "reviewer" may only act on candidates assigned to them.
+ * Admin/super_admin bypass assignment entirely (they can act on anyone, and
+ * are the ones who finalize decisions regardless of who reviewed first).
+ */
+export function canActOnAssignment(
+  user: SessionUser | null,
+  assignedReviewerId: string | null
+): boolean {
+  if (!user?.profile) return false
+  if (canManage(user)) return true
+  if (user.profile.role !== "reviewer") return false
+  return assignedReviewerId === user.id
+}

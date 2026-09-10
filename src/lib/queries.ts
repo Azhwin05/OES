@@ -175,7 +175,10 @@ export async function getApplicationDetail(id: string) {
       oes_residence_details(*),
       oes_documents(*),
       oes_application_status_history(*),
-      oes_admin_remarks(*)
+      oes_admin_remarks(*),
+      assigned_reviewer:oes_profiles!secondary_assigned_reviewer_id(full_name, email),
+      reviewed_by_profile:oes_profiles!secondary_reviewed_by(full_name, email),
+      finalized_by_profile:oes_profiles!secondary_finalized_by(full_name, email)
     `)
     .eq("id", id)
     .is("deleted_at", null)
@@ -324,6 +327,17 @@ export type SecondarySubmissionRow = {
   coreDocsUploaded: number
   coreDocsTotal: number
   reviewStatus: SecondaryReviewStatus
+  assignedReviewerId: string | null
+  assignedReviewerName: string | null
+  finalStatus: SecondaryReviewStatus
+}
+
+export type ReviewerProgress = {
+  reviewerId: string
+  reviewerName: string
+  assigned: number
+  reviewed: number
+  finalized: number
 }
 
 export type SecondaryOverview = {
@@ -337,9 +351,26 @@ export type SecondaryOverview = {
   approved: number
   rejected: number
   needsCorrection: number
+  finalPending: number
+  finalApproved: number
+  finalRejected: number
+  finalNeedsCorrection: number
+  unassigned: number
+  reviewerProgress: ReviewerProgress[]
   trend: { date: string; count: number }[]
   documentCoverage: { type: string; label: string; count: number }[]
   rows: SecondarySubmissionRow[]
+}
+
+/** Reviewer role accounts, for the assignment dropdown. */
+export async function getReviewersList(): Promise<{ id: string; name: string; email: string }[]> {
+  const admin = createAdminClient()
+  const { data } = await admin
+    .from("oes_profiles")
+    .select("id, full_name, email")
+    .eq("role", "reviewer")
+    .order("full_name", { ascending: true })
+  return (data ?? []).map((r) => ({ id: r.id, name: r.full_name ?? r.email, email: r.email }))
 }
 
 const SECONDARY_SUBMISSION_DEADLINE = new Date("2026-08-05T23:59:59+05:30")
@@ -360,21 +391,40 @@ type SecondaryAppEmbedded = {
   applicant_name: string
   secondary_submitted_at: string | null
   secondary_review_status: SecondaryReviewStatus
+  secondary_final_status: SecondaryReviewStatus
+  secondary_assigned_reviewer_id: string | null
   oes_personal_details: { district: string | null }[]
+  assigned_reviewer: { full_name: string | null; email: string } | null
 }
 
-export async function getSecondaryOverview(): Promise<SecondaryOverview> {
+/**
+ * `viewer` scopes the result for a plain reviewer to only their assigned
+ * candidates — admin/super_admin (viewer omitted, or role isn't "reviewer")
+ * see everyone. Reviewer-name embedding uses an explicit FK hint because
+ * oes_applications has several FKs into oes_profiles (created_by,
+ * secondary_reviewed_by, secondary_assigned_by, ...) and PostgREST needs
+ * to know which one to follow.
+ */
+export async function getSecondaryOverview(
+  viewer?: { role: string; id: string }
+): Promise<SecondaryOverview> {
   const admin = createAdminClient()
 
+  let appsQuery = admin
+    .from("oes_applications")
+    .select(
+      "id, reference_number, applicant_name, secondary_submitted_at, secondary_review_status, secondary_final_status, secondary_assigned_reviewer_id, oes_personal_details(district), assigned_reviewer:oes_profiles!secondary_assigned_reviewer_id(full_name, email)"
+    )
+    .eq("shortlisted", true)
+    .is("deleted_at", null)
+    .order("secondary_submitted_at", { ascending: false, nullsFirst: false })
+
+  if (viewer?.role === "reviewer") {
+    appsQuery = appsQuery.eq("secondary_assigned_reviewer_id", viewer.id)
+  }
+
   const [{ data: apps, error: appsError }, { data: docs, error: docsError }] = await Promise.all([
-    admin
-      .from("oes_applications")
-      .select(
-        "id, reference_number, applicant_name, secondary_submitted_at, secondary_review_status, oes_personal_details(district)"
-      )
-      .eq("shortlisted", true)
-      .is("deleted_at", null)
-      .order("secondary_submitted_at", { ascending: false, nullsFirst: false }),
+    appsQuery,
     // Path prefix scopes this to secondary-portal uploads specifically —
     // 'aadhaar' and 'scholarship' document_type values are shared with the
     // primary application flow, so document_type alone can't distinguish them.
@@ -412,6 +462,9 @@ export async function getSecondaryOverview(): Promise<SecondaryOverview> {
       coreDocsUploaded: CORE_SECONDARY_DOCS.filter((t) => uploadedTypes.has(t)).length,
       coreDocsTotal: CORE_SECONDARY_DOCS.length,
       reviewStatus: a.secondary_review_status,
+      assignedReviewerId: a.secondary_assigned_reviewer_id,
+      assignedReviewerName: a.assigned_reviewer?.full_name ?? a.assigned_reviewer?.email ?? null,
+      finalStatus: a.secondary_final_status,
     }
   })
 
@@ -425,6 +478,33 @@ export async function getSecondaryOverview(): Promise<SecondaryOverview> {
   const rejected = submittedRows.filter((r) => r.reviewStatus === "rejected").length
   const needsCorrection = submittedRows.filter((r) => r.reviewStatus === "needs_correction").length
   const pendingReview = submittedRows.filter((r) => r.reviewStatus === "pending").length
+
+  const finalApproved = submittedRows.filter((r) => r.finalStatus === "approved").length
+  const finalRejected = submittedRows.filter((r) => r.finalStatus === "rejected").length
+  const finalNeedsCorrection = submittedRows.filter((r) => r.finalStatus === "needs_correction").length
+  const finalPending = submittedRows.filter((r) => r.finalStatus === "pending").length
+  const unassigned = rows.filter((r) => !r.assignedReviewerId).length
+
+  const progressByReviewer = new Map<string, ReviewerProgress>()
+  for (const r of rows) {
+    if (!r.assignedReviewerId) continue
+    if (!progressByReviewer.has(r.assignedReviewerId)) {
+      progressByReviewer.set(r.assignedReviewerId, {
+        reviewerId: r.assignedReviewerId,
+        reviewerName: r.assignedReviewerName ?? "—",
+        assigned: 0,
+        reviewed: 0,
+        finalized: 0,
+      })
+    }
+    const p = progressByReviewer.get(r.assignedReviewerId)!
+    p.assigned += 1
+    if (r.reviewStatus !== "pending") p.reviewed += 1
+    if (r.finalStatus !== "pending") p.finalized += 1
+  }
+  const reviewerProgress = [...progressByReviewer.values()].sort((a, b) =>
+    a.reviewerName.localeCompare(b.reviewerName)
+  )
 
   const trendMap = new Map<string, number>()
   for (const r of rows) {
@@ -462,6 +542,12 @@ export async function getSecondaryOverview(): Promise<SecondaryOverview> {
     approved,
     rejected,
     needsCorrection,
+    finalPending,
+    finalApproved,
+    finalRejected,
+    finalNeedsCorrection,
+    unassigned,
+    reviewerProgress,
     trend,
     documentCoverage,
     rows,

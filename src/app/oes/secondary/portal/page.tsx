@@ -22,7 +22,7 @@ export default async function SecondaryPortalPage() {
     admin
       .from("oes_applications")
       .select(
-        "reference_number, applicant_name, status, secondary_submitted_at, secondary_review_status, secondary_review_note"
+        "reference_number, applicant_name, status, secondary_submitted_at, secondary_final_status, secondary_final_note"
       )
       .eq("id", applicant.applicationId)
       .single(),

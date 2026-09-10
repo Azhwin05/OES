@@ -44,8 +44,8 @@ type Props = {
     applicant_name: string
     status: string
     secondary_submitted_at: string | null
-    secondary_review_status: string
-    secondary_review_note: string | null
+    secondary_final_status: string
+    secondary_final_note: string | null
   }
   personal: Row
   education: Row
@@ -142,7 +142,7 @@ export function SecondaryPortalClient({
 
   const [uploads, setUploads] = useState<Record<string, UploadState>>({})
   const [submitting, setSubmitting] = useState(false)
-  const needsCorrection = application.secondary_review_status === "needs_correction"
+  const needsCorrection = application.secondary_final_status === "needs_correction"
   const [submitted, setSubmitted] = useState(!!application.secondary_submitted_at && !needsCorrection)
   const [error, setError] = useState<string | null>(null)
   const [missing, setMissing] = useState<SecondaryDocumentType[]>([])
@@ -319,7 +319,7 @@ export function SecondaryPortalClient({
         <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           <p className="font-semibold">Your submission needs a correction</p>
           <p className="mt-1">
-            {application.secondary_review_note ||
+            {application.secondary_final_note ||
               "Please review your documents and answers below, then resubmit."}
           </p>
         </div>

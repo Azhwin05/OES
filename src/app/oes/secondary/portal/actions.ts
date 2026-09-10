@@ -107,7 +107,10 @@ export async function submitSecondaryDocuments(
     }
   }
 
-  // A fresh submission always needs fresh review — clears any prior decision.
+  // A fresh submission always needs fresh review — clears any prior reviewer
+  // recommendation AND the SuperAdmin's final decision. Assignment
+  // (secondary_assigned_reviewer_id) is left untouched: the same reviewer
+  // should see the correction come back in, not lose the case.
   const { error: submitError } = await admin
     .from("oes_applications")
     .update({
@@ -116,6 +119,10 @@ export async function submitSecondaryDocuments(
       secondary_review_note: null,
       secondary_reviewed_at: null,
       secondary_reviewed_by: null,
+      secondary_final_status: "pending",
+      secondary_final_note: null,
+      secondary_finalized_at: null,
+      secondary_finalized_by: null,
     })
     .eq("id", applicant.applicationId)
 

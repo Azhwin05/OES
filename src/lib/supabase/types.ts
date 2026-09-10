@@ -45,6 +45,13 @@ export type ApplicationRow = {
   secondary_review_note: string | null
   secondary_reviewed_at: string | null
   secondary_reviewed_by: string | null
+  secondary_assigned_reviewer_id: string | null
+  secondary_assigned_at: string | null
+  secondary_assigned_by: string | null
+  secondary_final_status: SecondaryReviewStatus
+  secondary_final_note: string | null
+  secondary_finalized_at: string | null
+  secondary_finalized_by: string | null
 } & Timestamps
 
 export type PersonalRow = {

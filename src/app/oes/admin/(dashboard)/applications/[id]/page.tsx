@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
-import { getApplicationDetail } from "@/lib/queries"
-import { requireStaff, canManage, canReviewSecondary } from "@/lib/auth"
+import { getApplicationDetail, getReviewersList } from "@/lib/queries"
+import { requireStaff, canManage, canActOnAssignment } from "@/lib/auth"
 import { ApplicationDetail } from "@/components/admin/application-detail"
 
 export const dynamic = "force-dynamic"
@@ -14,11 +14,16 @@ export default async function ApplicationDetailPage({
   const user = await requireStaff()
   const app = await getApplicationDetail(id)
   if (!app) notFound()
+
+  const isManager = canManage(user)
+  const reviewers = isManager ? await getReviewersList() : []
+
   return (
     <ApplicationDetail
       app={app}
-      canManage={canManage(user)}
-      canReview={canReviewSecondary(user)}
+      canManage={isManager}
+      canReview={canActOnAssignment(user, app.secondary_assigned_reviewer_id)}
+      reviewers={reviewers}
     />
   )
 }

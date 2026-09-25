@@ -540,6 +540,10 @@ const en: Dict = {
   "secondary.assign.placeholder": "Assign to reviewer…",
   "secondary.assign.button": "Assign",
   "secondary.assign.success": "Assignment saved.",
+  "secondary.export.tertiary.button": "Export for Tertiary Email",
+  "secondary.export.tertiary.hint": "Exports all SuperAdmin-approved candidates with email, ready to import into Brevo for the Tertiary submission email.",
+  "secondary.export.tertiary.empty": "No approved candidates yet — finalize approvals first.",
+  "secondary.export.tertiary.missingEmail": "approved candidate(s) are missing an email address.",
 
   // Footer
   "footer.rights": "All rights reserved.",
@@ -1049,6 +1053,10 @@ const ta: Dict = {
   "secondary.assign.placeholder": "மதிப்பாய்வாளருக்கு ஒதுக்கு…",
   "secondary.assign.button": "ஒதுக்கு",
   "secondary.assign.success": "ஒதுக்கீடு சேமிக்கப்பட்டது.",
+  "secondary.export.tertiary.button": "மூன்றாம் நிலை மின்னஞ்சலுக்கு ஏற்றுமதி செய்",
+  "secondary.export.tertiary.hint": "மின்னஞ்சலுடன் SuperAdmin ஒப்புதல் பெற்ற அனைத்து விண்ணப்பதாரர்களையும் ஏற்றுமதி செய்கிறது, மூன்றாம் நிலை சமர்ப்பிப்பு மின்னஞ்சலுக்காக Brevo-வில் இறக்குமதி செய்ய தயார்.",
+  "secondary.export.tertiary.empty": "இன்னும் ஒப்புதல் பெற்ற விண்ணப்பதாரர்கள் இல்லை — முதலில் இறுதி ஒப்புதலை வழங்கவும்.",
+  "secondary.export.tertiary.missingEmail": "ஒப்புதல் பெற்ற விண்ணப்பதாரர்(கள்) மின்னஞ்சல் முகவரி இல்லை.",
 
   "footer.rights": "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
   "footer.privacy": "தனியுரிமை",

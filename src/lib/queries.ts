@@ -322,6 +322,7 @@ export type SecondarySubmissionRow = {
   id: string
   reference_number: string
   applicant_name: string
+  email: string | null
   district: string | null
   secondary_submitted_at: string | null
   coreDocsUploaded: number
@@ -393,7 +394,7 @@ type SecondaryAppEmbedded = {
   secondary_review_status: SecondaryReviewStatus
   secondary_final_status: SecondaryReviewStatus
   secondary_assigned_reviewer_id: string | null
-  oes_personal_details: { district: string | null }[]
+  oes_personal_details: { district: string | null; email: string | null }[]
   assigned_reviewer: { full_name: string | null; email: string } | null
 }
 
@@ -413,7 +414,7 @@ export async function getSecondaryOverview(
   let appsQuery = admin
     .from("oes_applications")
     .select(
-      "id, reference_number, applicant_name, secondary_submitted_at, secondary_review_status, secondary_final_status, secondary_assigned_reviewer_id, oes_personal_details(district), assigned_reviewer:oes_profiles!secondary_assigned_reviewer_id(full_name, email)"
+      "id, reference_number, applicant_name, secondary_submitted_at, secondary_review_status, secondary_final_status, secondary_assigned_reviewer_id, oes_personal_details(district, email), assigned_reviewer:oes_profiles!secondary_assigned_reviewer_id(full_name, email)"
     )
     .eq("shortlisted", true)
     .is("deleted_at", null)
@@ -457,6 +458,7 @@ export async function getSecondaryOverview(
       id: a.id,
       reference_number: a.reference_number,
       applicant_name: a.applicant_name,
+      email: a.oes_personal_details?.[0]?.email ?? null,
       district: a.oes_personal_details?.[0]?.district ?? null,
       secondary_submitted_at: a.secondary_submitted_at,
       coreDocsUploaded: CORE_SECONDARY_DOCS.filter((t) => uploadedTypes.has(t)).length,

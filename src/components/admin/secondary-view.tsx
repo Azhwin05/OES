@@ -350,6 +350,37 @@ export function SecondaryView({
     else exportToCsv(flat, name)
   }
 
+  /**
+   * SuperAdmin-finalized approvals, ready for the Tertiary email — always
+   * pulled from the full unfiltered list (not `filtered`), so this stays
+   * correct regardless of whatever table filters happen to be active.
+   * Columns match Brevo contact attribute names exactly (EMAIL, FIRSTNAME,
+   * OES_ID) so the file can be imported as a list/segment directly — no
+   * PASSWORD column, since Brevo already has it from the original import
+   * and we never store passwords in plain text to begin with.
+   */
+  function exportApprovedForTertiary(kind: "xlsx" | "csv") {
+    const approved = rows.filter((r) => r.finalStatus === "approved")
+    if (approved.length === 0) {
+      toast.error(t("secondary.export.tertiary.empty"))
+      return
+    }
+    const flat = approved.map((r) => ({
+      EMAIL: r.email ?? "",
+      FIRSTNAME: r.applicant_name.trim().split(/\s+/)[0] ?? r.applicant_name,
+      OES_ID: r.reference_number,
+      NAME: r.applicant_name,
+      DISTRICT: r.district ?? "",
+    }))
+    const missingEmail = flat.filter((f) => !f.EMAIL).length
+    if (missingEmail > 0) {
+      toast.error(`${missingEmail} ${t("secondary.export.tertiary.missingEmail")}`)
+    }
+    const name = `oes-tertiary-ready-${new Date().toISOString().slice(0, 10)}`
+    if (kind === "xlsx") exportToExcel(flat, name)
+    else exportToCsv(flat, name)
+  }
+
   async function assignSelected() {
     if (selectedIds.length === 0 || !assignTarget) return
     setAssigning(true)
@@ -565,6 +596,16 @@ export function SecondaryView({
             <Button variant="outline" size="sm" onClick={() => exportRows("csv")}>
               <FileText className="mr-1 h-4 w-4" /> CSV
             </Button>
+            {canManage && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => exportApprovedForTertiary("xlsx")}
+                title={t("secondary.export.tertiary.hint")}
+              >
+                <ClipboardCheck className="mr-1 h-4 w-4" /> {t("secondary.export.tertiary.button")}
+              </Button>
+            )}
           </div>
         </div>
 

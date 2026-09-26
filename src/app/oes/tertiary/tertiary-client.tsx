@@ -62,6 +62,7 @@ type UploadState = {
   status: "idle" | "uploading" | "done" | "error"
   fileName?: string
   doc?: TertiaryDocUpload
+  errorReason?: "size" | "type" | "failed"
 }
 
 export function TertiaryPortalClient({ application, existingDocs, existingAnswers }: Props) {
@@ -96,7 +97,7 @@ export function TertiaryPortalClient({ application, existingDocs, existingAnswer
     if (!file) return
     const err = validateFile(file)
     if (err) {
-      setUploads((u) => ({ ...u, [type]: { status: "error" } }))
+      setUploads((u) => ({ ...u, [type]: { status: "error", errorReason: err } }))
       return
     }
     setUploads((u) => ({ ...u, [type]: { status: "uploading", fileName: file.name } }))
@@ -118,7 +119,7 @@ export function TertiaryPortalClient({ application, existingDocs, existingAnswer
         },
       }))
     } catch {
-      setUploads((u) => ({ ...u, [type]: { status: "error", fileName: file.name } }))
+      setUploads((u) => ({ ...u, [type]: { status: "error", fileName: file.name, errorReason: "failed" } }))
     }
   }
 
@@ -350,7 +351,11 @@ export function TertiaryPortalClient({ application, existingDocs, existingAnswer
                   )}
                   {state?.status === "error" && (
                     <p className="text-xs text-destructive">
-                      Upload failed. Use PDF/JPG/PNG under 5MB.
+                      {state.errorReason === "size"
+                        ? "File is too large. Please use a file under 5MB."
+                        : state.errorReason === "type"
+                          ? "Unsupported file type. Please use PDF, JPG or PNG."
+                          : "Upload failed. Please check your connection and try again."}
                     </p>
                   )}
                 </div>

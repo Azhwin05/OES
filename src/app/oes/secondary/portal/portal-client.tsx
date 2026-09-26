@@ -60,6 +60,7 @@ type UploadState = {
   status: "idle" | "uploading" | "done" | "error"
   fileName?: string
   doc?: SecondaryDocUpload
+  errorReason?: "size" | "type" | "failed"
 }
 
 type ChecklistRow = {
@@ -206,7 +207,7 @@ export function SecondaryPortalClient({
     if (!file) return
     const err = validateFile(file)
     if (err) {
-      setUploads((u) => ({ ...u, [row.key]: { status: "error" } }))
+      setUploads((u) => ({ ...u, [row.key]: { status: "error", errorReason: err } }))
       return
     }
     setUploads((u) => ({ ...u, [row.key]: { status: "uploading", fileName: file.name } }))
@@ -228,7 +229,7 @@ export function SecondaryPortalClient({
         },
       }))
     } catch {
-      setUploads((u) => ({ ...u, [row.key]: { status: "error", fileName: file.name } }))
+      setUploads((u) => ({ ...u, [row.key]: { status: "error", fileName: file.name, errorReason: "failed" } }))
     }
   }
 
@@ -464,7 +465,11 @@ export function SecondaryPortalClient({
                   )}
                   {state?.status === "error" && (
                     <p className="text-xs text-destructive">
-                      Upload failed. Use PDF/JPG/PNG under 5MB.
+                      {state.errorReason === "size"
+                        ? "File is too large. Please use a file under 5MB."
+                        : state.errorReason === "type"
+                          ? "Unsupported file type. Please use PDF, JPG or PNG."
+                          : "Upload failed. Please check your connection and try again."}
                     </p>
                   )}
                   {row.type === "income_proof" && (
